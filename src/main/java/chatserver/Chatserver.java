@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import cli.Command;
+import cli.Shell;
 import util.Config;
 
 
@@ -25,9 +27,12 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private Config config;
 	private InputStream userRequestStream;
 	private PrintStream userResponseStream;
-		
+	
+	private Shell shell;
+	
 	//additional variables
-	private Map<String,String> usersMap;
+	private Map<String,String> passwordMap;	//saves Username / Password
+	private Map<String,String> usersMap;	//save online / offline status for users
 	private BufferedReader reader;
 	private PrintWriter writer;
 	
@@ -51,17 +56,28 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
 		
+		//register shell
+		shell = new Shell(componentName, userRequestStream, userResponseStream);
+		shell.register(this);
+		
+		this.passwordMap = new HashMap<String,String>();
 		this.usersMap = new HashMap<String,String>();
 		this.reader = new BufferedReader(new InputStreamReader(userRequestStream));
 		this.writer = new PrintWriter(userResponseStream);
-	
 		
-
+		
+		
+		
 	}
 
 	@Override
+	@Command
 	public void run() {
 		
+		//start shell thread 
+		Thread  t_shell = new Thread(shell);
+		t_shell.start();
+		/*
 		//start thread to listen for incoming tcp requests
 		Thread chatServerListenerTCP = new Thread(new ChatServerListenerTCP(this.config));
 		chatServerListenerTCP.start();
@@ -71,25 +87,40 @@ public class Chatserver implements IChatserverCli, Runnable {
 		Thread chatServerListenerUDP = new Thread(new ChatServerListenerUDP(this.config));
 		chatServerListenerUDP.start();
 		log.info("Server UDP Listener started");
+		*/
 		
 	}
 
 	@Override
+	@Command
 	public String users() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO check with Unix compatible
+		// TODO not in alphabetic order at the moment
+		
+		String users_status = "";
+		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
+			users_status += entry.getKey();
+			users_status += " ";
+			users_status += entry.getValue();
+			users_status += "\n";
+		}
+	
+		return users_status;
 	}
 
 	@Override
 	public String exit() throws IOException {
 		// TODO Auto-generated method stub
+		
+		shell.close();
+		
 		return null;
 	}
 
 	
 	
 	/** readAllUsersFromProperties()
-	 *  reads username / password from user.properties and add to usersMap data-structure
+	 *  reads username / password from user.properties and add to passwordMap data-structure
 	 * 
 	 */
 	public void readAllUsersFromProperties(){
@@ -101,11 +132,14 @@ public class Chatserver implements IChatserverCli, Runnable {
 		Iterator iterator = userNames.iterator();
 		while(iterator.hasNext()){
 			
-			String username = (String) iterator.next();
-			String password = userConfig.getString(username);
-			this.usersMap.put(username, password);		
+			String username_with_ending = (String) iterator.next();
+			String username = username_with_ending.substring(0, username_with_ending.length()-9); // cut off ".password" from the end of string
+			String password = userConfig.getString(username_with_ending);						  //with ending is with ".password"
+			this.passwordMap.put(username, password);	//save username and password
+			this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
 			
-			//log.info("user name user.properties: " + username + " password: " + password);
+			
+			log.info("user name user.properties: " + username + " password: " + password);
 		}
 		
 		this.tcpPort = config.getInt("tcp.port");
@@ -126,7 +160,9 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//read username / password from user.properties
 		chatserver.readAllUsersFromProperties();
 		Thread chatServerTread = new Thread(chatserver);
-		chatServerTread.run();
+		
+		
+		chatServerTread.run(); 
 		
 	
 	}
