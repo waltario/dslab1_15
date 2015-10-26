@@ -55,7 +55,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.reader = new BufferedReader(new InputStreamReader(userRequestStream));
 		this.writer = new PrintWriter(userResponseStream);
 	
-		//TODO
+		
 
 	}
 
@@ -65,9 +65,12 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//start thread to listen for incoming tcp requests
 		Thread chatServerListenerTCP = new Thread(new ChatServerListenerTCP(this.config));
 		chatServerListenerTCP.start();
+		log.info("Server TCP Listener started");
 		
 		//start thread to listen for incoming udp request
-		
+		Thread chatServerListenerUDP = new Thread(new ChatServerListenerUDP(this.config));
+		chatServerListenerUDP.start();
+		log.info("Server UDP Listener started");
 		
 	}
 
@@ -102,13 +105,13 @@ public class Chatserver implements IChatserverCli, Runnable {
 			String password = userConfig.getString(username);
 			this.usersMap.put(username, password);		
 			
-			log.info("user name user.properties: " + username + " password: " + password);
+			//log.info("user name user.properties: " + username + " password: " + password);
 		}
 		
 		this.tcpPort = config.getInt("tcp.port");
 		this.udpPort = config.getInt("udp.port");
 	
-		log.info("tcp_port: " + this.tcpPort + " udp_port: " + this.udpPort );
+		//log.info("tcp_port: " + this.tcpPort + " udp_port: " + this.udpPort );
 	}
 	
 	/**
