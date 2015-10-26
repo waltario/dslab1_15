@@ -33,9 +33,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 	//additional variables
 	private Map<String,String> passwordMap;	//saves Username / Password
 	private Map<String,String> usersMap;	//save online / offline status for users
-	private BufferedReader reader;
-	private PrintWriter writer;
-	
+
 	private int tcpPort;
 	private int udpPort;
 	
@@ -66,10 +64,11 @@ public class Chatserver implements IChatserverCli, Runnable {
 		shell = new Shell(componentName, userRequestStream, userResponseStream);
 		shell.register(this);
 		
+		//start shell thread 
+		new Thread(shell).start();;
+		
 		this.passwordMap = new HashMap<String,String>();
 		this.usersMap = new HashMap<String,String>();
-		this.reader = new BufferedReader(new InputStreamReader(userRequestStream));
-		this.writer = new PrintWriter(userResponseStream);
 		
 	}
 
@@ -77,23 +76,20 @@ public class Chatserver implements IChatserverCli, Runnable {
 	@Command
 	public void run() {
 		
-		//start shell thread 
-		Thread  t_shell = new Thread(shell);
-		t_shell.start();
 		
 		//create listener for TCP and UDP
 		this.chatServerListenerTCP = new ChatServerListenerTCP(this.config);
-		this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
+		//this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
 		
 		//create new Theads for TCP and UDP
 		this.t_chatServerListenerTCP = new Thread(this.chatServerListenerTCP);
-		this.t_chatServerListenerUDP = new Thread(this.chatServerListenerUDP);
+		//this.t_chatServerListenerUDP = new Thread(this.chatServerListenerUDP);
 		
 		//start Threads
 		this.t_chatServerListenerTCP.start();
-		this.t_chatServerListenerUDP.start();
-		
+		//this.t_chatServerListenerUDP.start();
 		log.info("TCP and UDP Listener started");
+		
 		
 	}
 
@@ -117,6 +113,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 	@Override
 	public String exit() throws IOException {
 		// TODO Auto-generated method stub
+		
+		chatServerListenerTCP.close();
 		
 		shell.close();
 		

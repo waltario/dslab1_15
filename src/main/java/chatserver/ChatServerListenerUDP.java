@@ -24,6 +24,11 @@ public class ChatServerListenerUDP implements Runnable{
 		executor = Executors.newFixedThreadPool(100);
 	}
 
+	public void close(){
+		
+		executor.shutdown();
+		datagramSocket.close();
+	}
 	
 	@Override
 	public void run() {
