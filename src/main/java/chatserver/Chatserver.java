@@ -39,6 +39,12 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private int tcpPort;
 	private int udpPort;
 	
+	private ChatServerListenerTCP chatServerListenerTCP;
+	private ChatServerListenerUDP chatServerListenerUDP;
+ 	
+	Thread t_chatServerListenerTCP;
+	Thread t_chatServerListenerUDP;
+	
 	/**
 	 * @param componentName
 	 *            the name of the component - represented in the prompt
@@ -65,9 +71,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.reader = new BufferedReader(new InputStreamReader(userRequestStream));
 		this.writer = new PrintWriter(userResponseStream);
 		
-		
-		
-		
 	}
 
 	@Override
@@ -77,17 +80,20 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//start shell thread 
 		Thread  t_shell = new Thread(shell);
 		t_shell.start();
-		/*
-		//start thread to listen for incoming tcp requests
-		Thread chatServerListenerTCP = new Thread(new ChatServerListenerTCP(this.config));
-		chatServerListenerTCP.start();
-		log.info("Server TCP Listener started");
 		
-		//start thread to listen for incoming udp request
-		Thread chatServerListenerUDP = new Thread(new ChatServerListenerUDP(this.config));
-		chatServerListenerUDP.start();
-		log.info("Server UDP Listener started");
-		*/
+		//create listener for TCP and UDP
+		this.chatServerListenerTCP = new ChatServerListenerTCP(this.config);
+		this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
+		
+		//create new Theads for TCP and UDP
+		this.t_chatServerListenerTCP = new Thread(this.chatServerListenerTCP);
+		this.t_chatServerListenerUDP = new Thread(this.chatServerListenerUDP);
+		
+		//start Threads
+		this.t_chatServerListenerTCP.start();
+		this.t_chatServerListenerUDP.start();
+		
+		log.info("TCP and UDP Listener started");
 		
 	}
 
