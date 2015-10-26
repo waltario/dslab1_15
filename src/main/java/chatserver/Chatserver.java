@@ -25,13 +25,14 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private Config config;
 	private InputStream userRequestStream;
 	private PrintStream userResponseStream;
-	
-	
-	
+		
 	//additional variables
 	private Map<String,String> usersMap;
-	BufferedReader reader;
-	PrintWriter writer;
+	private BufferedReader reader;
+	private PrintWriter writer;
+	
+	private int tcpPort;
+	private int udpPort;
 	
 	/**
 	 * @param componentName
@@ -60,7 +61,14 @@ public class Chatserver implements IChatserverCli, Runnable {
 
 	@Override
 	public void run() {
-		// TODO
+		
+		//start thread to listen for incoming tcp requests
+		Thread chatServerListenerTCP = new Thread(new ChatServerListenerTCP(this.config));
+		chatServerListenerTCP.start();
+		
+		//start thread to listen for incoming udp request
+		
+		
 	}
 
 	@Override
@@ -96,6 +104,11 @@ public class Chatserver implements IChatserverCli, Runnable {
 			
 			log.info("user name user.properties: " + username + " password: " + password);
 		}
+		
+		this.tcpPort = config.getInt("tcp.port");
+		this.udpPort = config.getInt("udp.port");
+	
+		log.info("tcp_port: " + this.tcpPort + " udp_port: " + this.udpPort );
 	}
 	
 	/**
@@ -110,7 +123,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//read username / password from user.properties
 		chatserver.readAllUsersFromProperties();
 		Thread chatServerTread = new Thread(chatserver);
-		chatServerTread.start();
+		chatServerTread.run();
 		
 	
 	}
