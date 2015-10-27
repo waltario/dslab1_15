@@ -96,6 +96,9 @@ public class ClientHandlerUDP implements Runnable{
 	public void close(){
 		
 		this.isClosed = true;
+		if(datagramSocket !=null){		
+			datagramSocket.close();
+		}
 		
 	}
 	
@@ -119,6 +122,8 @@ public class ClientHandlerUDP implements Runnable{
 		}
 		
 	}
+	
+	
 	
 	
 	

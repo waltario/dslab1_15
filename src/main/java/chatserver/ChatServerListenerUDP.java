@@ -7,6 +7,7 @@ import java.net.SocketException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import util.Config;
@@ -29,7 +30,25 @@ public class ChatServerListenerUDP implements Runnable{
 		
 		this.isClosed = true;
 		executor.shutdown();
-		datagramSocket.close();
+		
+		if(datagramSocket !=null){		
+			datagramSocket.close();
+		}
+				
+		try {
+		     // Wait a while for existing tasks to terminate
+		     if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+		    	 executor.shutdownNow(); // Cancel currently executing tasks
+		       // Wait a while for tasks to respond to being cancelled
+		       if (!executor.awaitTermination(5, TimeUnit.SECONDS))
+		           System.err.println("Pool did not terminate");
+		     }
+		   } catch (InterruptedException ie) {
+		     // (Re-)Cancel if current thread also interrupted
+			   executor.shutdownNow();
+		     // Preserve interrupt status
+		     Thread.currentThread().interrupt();
+		   }
 	}
 	
 	@Override
@@ -58,10 +77,10 @@ public class ChatServerListenerUDP implements Runnable{
 			
 		} catch (SocketException e) {
 			
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (IOException e) {
 			
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 	}

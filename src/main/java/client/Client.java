@@ -183,7 +183,7 @@ public class Client implements IClientCli, Runnable {
 		// TODO Auto-generated method stub
 		
 		this.handlerTCP.close();
-		this.clientSocket.close();
+		this.clientHandlerUDP.close();
 		shell.close();		
 		return null;
 	}

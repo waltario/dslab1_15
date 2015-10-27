@@ -85,6 +85,8 @@ public class HandlerTCP implements Runnable{
 	
 	public String checkCommand(String message){
 		
+		//TODO return with error if not !messages
+		
 		String retMessage = "";
 		String[] splittedStirings=null;
 		splittedStirings =  message.split(" ");

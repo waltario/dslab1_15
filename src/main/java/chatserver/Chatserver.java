@@ -118,7 +118,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		// TODO Auto-generated method stub
 		
 		chatServerListenerTCP.close();	//send TCP listener closing event
-		
+		chatServerListenerUDP.close();  //send UDP listener closing event
 		shell.close();					//close shell at last
 		
 		return null;

@@ -65,7 +65,6 @@ public class ChatServerListenerTCP implements Runnable{
 		     Thread.currentThread().interrupt();
 		   }
 		
-		
 	}
 	
 	

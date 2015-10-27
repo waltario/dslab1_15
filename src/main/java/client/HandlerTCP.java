@@ -41,15 +41,7 @@ public class HandlerTCP implements Runnable {
 			e.printStackTrace();
 		}
 		
-		/*
-		try {
-			
-			this.clientSocket.close();
-			
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}*/
+	
 	}
 	
 	public String login(String username, String password) throws IOException{
@@ -85,16 +77,7 @@ public class HandlerTCP implements Runnable {
 			this.writer = new PrintWriter(this.clientSocket.getOutputStream(),true);
 			this.reader = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
 			
-			/*
-			String messageToServer= "!login bill sdfds";
-			log.info(messageToServer);
-			writer.println(messageToServer);
-			
-			String ret = reader.readLine();
-			
-			log.info("return; " +ret);
-			*/
-			//wait for closing signal
+		
 			while(!this.isClosed){
 						
 			}
