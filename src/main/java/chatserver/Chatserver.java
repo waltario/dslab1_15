@@ -31,8 +31,12 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private Shell shell;
 	
 	//additional variables
-	private Map<String,String> passwordMap;	//saves Username / Password
-	private Map<String,String> usersMap;	//save online / offline status for users
+	// TODO replace with chatsever data instance
+	
+	private ChatServerData chatServerData;
+	
+	//private Map<String,String> passwordMap;	//saves Username / Password
+	//private Map<String,String> usersMap;	//save online / offline status for users
 
 	private int tcpPort;
 	private int udpPort;
@@ -67,8 +71,13 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//start shell thread 
 		new Thread(shell).start();;
 		
-		this.passwordMap = new HashMap<String,String>();
-		this.usersMap = new HashMap<String,String>();
+		//TODO replace
+		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
+		
+		//this.passwordMap = new HashMap<String,String>();
+		//this.usersMap = new HashMap<String,String>();
+		
+		this.init_ChatServerData();
 		
 	}
 
@@ -99,24 +108,18 @@ public class Chatserver implements IChatserverCli, Runnable {
 		// TODO check with Unix compatible
 		// TODO not in alphabetic order at the moment
 		
-		String users_status = "";
-		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
-			users_status += entry.getKey();
-			users_status += " ";
-			users_status += entry.getValue();
-			users_status += "\n";
-		}
-	
-		return users_status;
+		return this.chatServerData.getAllUsers();
+		
 	}
 
 	@Override
+	@Command
 	public String exit() throws IOException {
 		// TODO Auto-generated method stub
 		
-		chatServerListenerTCP.close();
+		chatServerListenerTCP.close();	//send TCP listener closing event
 		
-		shell.close();
+		shell.close();					//close shell at last
 		
 		return null;
 	}
@@ -129,10 +132,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 	 */
 	public void readAllUsersFromProperties(){
 		
-		Set<String> userNames = new HashSet<String>();
-		Config userConfig = new Config("user");
-		userNames = userConfig.listKeys();
 		
+		/*
 		Iterator iterator = userNames.iterator();
 		while(iterator.hasNext()){
 			
@@ -148,8 +149,35 @@ public class Chatserver implements IChatserverCli, Runnable {
 		
 		this.tcpPort = config.getInt("tcp.port");
 		this.udpPort = config.getInt("udp.port");
-	
+		*/
 		//log.info("tcp_port: " + this.tcpPort + " udp_port: " + this.udpPort );
+	}
+	
+	public void init_ChatServerData(){
+		
+		Set<String> userNames = new HashSet<String>();
+		Config userConfig = new Config("user");
+		userNames = userConfig.listKeys();
+		
+		Iterator iterator = userNames.iterator();
+		while(iterator.hasNext()){
+			
+			String username_with_ending = (String) iterator.next();
+			String username = username_with_ending.substring(0, username_with_ending.length()-9); // cut off ".password" from the end of string
+			String password = userConfig.getString(username_with_ending);						  //with ending is with ".password"
+			
+			this.chatServerData.initUsers(username, password);
+			
+			//this.passwordMap.put(username, password);	//save username and password
+			//this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
+			
+			//log.info("user name user.properties: " + username + " password: " + password);
+		}
+		
+		//log.info(this.chatServerData.getAllUsers());
+		
+		this.tcpPort = config.getInt("tcp.port");
+		this.udpPort = config.getInt("udp.port");
 	}
 	
 	/**
@@ -162,10 +190,9 @@ public class Chatserver implements IChatserverCli, Runnable {
 				new Config("chatserver"), System.in, System.out);
 		
 		//read username / password from user.properties
-		chatserver.readAllUsersFromProperties();
+		//chatserver.readAllUsersFromProperties();	//redone by init_chatserverdata()
+		
 		Thread chatServerTread = new Thread(chatserver);
-		
-		
 		chatServerTread.run(); 
 		
 	

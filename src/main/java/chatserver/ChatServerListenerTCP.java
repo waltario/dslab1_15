@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-
+import client.HandlerTCP;
 import util.Config;
 
 public class ChatServerListenerTCP implements Runnable{
@@ -20,27 +21,50 @@ public class ChatServerListenerTCP implements Runnable{
 	private Config config;
 	private ExecutorService executor;
 	private List<HandlerTCP> clientList = null;
+	private boolean isClosed;
 	
 	
 	public ChatServerListenerTCP(Config config) {
 		this.config = config;
-		this.clientList = new ArrayList<HandlerTCP>();
-		executor = Executors.newFixedThreadPool(100);
+		this.serverSocket = null;
+		this.isClosed = false;
+		this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
+		executor = Executors.newFixedThreadPool(100);	
 		
 	}
 	
 	public void close(){
 		
-		executor.shutdown();	//dont accept any incoming threads
+		this.isClosed = true;
+		executor.shutdown();			//dont accept any incoming threads
 		
-		if(serverSocket !=null){
+		if(serverSocket !=null){		
 			try {
-				serverSocket.close();
+				serverSocket.close();	
 				
 			} catch (IOException e) {
 				
 			}
 		}
+		
+		for(HandlerTCP shutdownHandler : this.clientList)	//shutdown all TCPHandler Connections to Clients
+			shutdownHandler.close();;
+		
+		try {
+		     // Wait a while for existing tasks to terminate
+		     if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+		    	 executor.shutdownNow(); // Cancel currently executing tasks
+		       // Wait a while for tasks to respond to being cancelled
+		       if (!executor.awaitTermination(5, TimeUnit.SECONDS))
+		           System.err.println("Pool did not terminate");
+		     }
+		   } catch (InterruptedException ie) {
+		     // (Re-)Cancel if current thread also interrupted
+			   executor.shutdownNow();
+		     // Preserve interrupt status
+		     Thread.currentThread().interrupt();
+		   }
+		
 		
 	}
 	
@@ -53,20 +77,19 @@ public class ChatServerListenerTCP implements Runnable{
 			serverSocket = new ServerSocket(this.config.getInt("tcp.port"));
 			log.info("ChatServerListenerTCP established tcp connection");
 			
-			while(true){
+			while(!this.isClosed){
 				
-				//tcphandler added to ArrayList and started a new Thread
-				Socket client = serverSocket.accept();
-				HandlerTCP handlerTCP = new HandlerTCP(client);
-				executor.execute(handlerTCP);
-				this.clientList.add(handlerTCP);
+				Socket client = serverSocket.accept();				//waiting for incoming tcp request from client
+				HandlerTCP handlerTCP = new HandlerTCP(client);		//create new HandlerTCP
+				executor.execute(handlerTCP);						//start new Thread
+				this.clientList.add(handlerTCP);					//add to managed client list
 				
 				log.info("new HandlerTCP created");
 			}
 			
 		} catch (IOException e) {
 			
-			log.severe("Not able to establis tcp coonection on port" + this.config.getInt("tcp.port"));
+			//log.severe("Not able to establis tcp coonection on port" + this.config.getInt("tcp.port"));
 			//e.printStackTrace();
 		}
 		
