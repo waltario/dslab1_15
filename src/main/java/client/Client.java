@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import chatserver.Chatserver;
+import cli.Command;
 import cli.Shell;
 import util.Config;
 
@@ -34,6 +35,8 @@ public class Client implements IClientCli, Runnable {
 	private Socket clientSocket;
 	private Thread t_clientSocket;
 	private HandlerTCP handlerTCP;
+	private ClientHandlerUDP clientHandlerUDP;
+	private Thread t_handlerUDP;
 	
 	
 	
@@ -74,7 +77,7 @@ public class Client implements IClientCli, Runnable {
 		//read tcp, udp chatsevername from config
 		this.chatserver_name = config.getString("chatserver.host");
 		this.chatserver_tcp_port = config.getInt("chatserver.tcp.port");
-		this.chatserver_udp_port = config.getInt("chatserver.udp.port=");
+		this.chatserver_udp_port = config.getInt("chatserver.udp.port");
 		
 		this.isLoggedIn = false;
 	
@@ -92,10 +95,15 @@ public class Client implements IClientCli, Runnable {
 		
 		try {
 			
-			//create new socket and forward to thread
+			//create new socket and forward to thread, start thread
 			this.clientSocket = new Socket(chatserver_name, chatserver_tcp_port);
 			this.handlerTCP = new HandlerTCP(this.clientSocket);
 			this.t_clientSocket = new Thread(this.handlerTCP);
+			this.t_clientSocket.start();
+			
+			this.clientHandlerUDP = new ClientHandlerUDP();
+			this.t_handlerUDP = new Thread(clientHandlerUDP);
+			this.t_handlerUDP.start();
 			
 
 		} catch (UnknownHostException e) {
@@ -110,10 +118,11 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	@Override
+	@Command
 	public String login(String username, String password) throws IOException {
 		
 		if(this.checkLogStatus())
-			return "User: " + username + " already logged in";
+			return "User " + username + " already logged in.";
 		
 		String serverMessage = handlerTCP.login(username, password);
 		this.isLoggedIn = true;
@@ -122,9 +131,13 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	@Override
+	@Command
 	public String logout() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if(!this.checkLogStatus())
+			return "User is already logged out.";
+				
+		return handlerTCP.logout();
 	}
 
 	@Override
@@ -134,9 +147,10 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	@Override
+	@Command
 	public String list() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		log.info("list command enterd");
+		return this.clientHandlerUDP.list(this.chatserver_name,this.chatserver_udp_port);
 	}
 
 	@Override
@@ -164,6 +178,7 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	@Override
+	@Command
 	public String exit() throws IOException {
 		// TODO Auto-generated method stub
 		

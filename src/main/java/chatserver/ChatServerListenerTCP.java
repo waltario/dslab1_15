@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import client.HandlerTCP;
+
 import util.Config;
 
 public class ChatServerListenerTCP implements Runnable{
@@ -48,7 +48,7 @@ public class ChatServerListenerTCP implements Runnable{
 		}
 		
 		for(HandlerTCP shutdownHandler : this.clientList)	//shutdown all TCPHandler Connections to Clients
-			shutdownHandler.close();;
+			shutdownHandler.shutdown();
 		
 		try {
 		     // Wait a while for existing tasks to terminate

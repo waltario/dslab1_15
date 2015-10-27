@@ -88,15 +88,15 @@ public class Chatserver implements IChatserverCli, Runnable {
 		
 		//create listener for TCP and UDP
 		this.chatServerListenerTCP = new ChatServerListenerTCP(this.config);
-		//this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
+		this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
 		
 		//create new Theads for TCP and UDP
 		this.t_chatServerListenerTCP = new Thread(this.chatServerListenerTCP);
-		//this.t_chatServerListenerUDP = new Thread(this.chatServerListenerUDP);
+		this.t_chatServerListenerUDP = new Thread(this.chatServerListenerUDP);
 		
 		//start Threads
 		this.t_chatServerListenerTCP.start();
-		//this.t_chatServerListenerUDP.start();
+		this.t_chatServerListenerUDP.start();
 		log.info("TCP and UDP Listener started");
 		
 		

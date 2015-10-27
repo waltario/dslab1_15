@@ -5,8 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
+
+import chatserver.ChatServerListenerTCP;
 
 public class HandlerTCP implements Runnable {
+
+	private static final Logger log = Logger.getLogger(HandlerTCP.class.getName());
 
 	private PrintWriter writer;
 	private BufferedReader reader;
@@ -26,6 +31,16 @@ public class HandlerTCP implements Runnable {
 	public void close(){
 		
 		this.isClosed = true;
+		
+		writer.close();
+		try {
+			reader.close();
+			clientSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		/*
 		try {
 			
@@ -39,24 +54,49 @@ public class HandlerTCP implements Runnable {
 	
 	public String login(String username, String password) throws IOException{
 		
-		String messageToServer= username + password;
+		String messageToServer= "!login " + username + " " + password;
+		log.info(messageToServer);
+		
 		writer.println(messageToServer);
+		//writer.write(messageToServer + "\n");
+		//writer.flush();
 		return reader.readLine();	
+	}
+	
+	public String logout() throws IOException{
+		
+		String messageToServer= "!logout";
+		log.info(messageToServer);
+		//writer.write(messageToServer + "\n");
+		//writer.flush();
+		writer.println(messageToServer);
+		return reader.readLine();		
 	}
 	
 	
 	@Override
 	public void run() {
-	
+		
+		log.info("Client HandlerTCP running");
+		
 		//start Streams
 		try {
 			
-			this.writer = new PrintWriter(this.clientSocket.getOutputStream());
+			this.writer = new PrintWriter(this.clientSocket.getOutputStream(),true);
 			this.reader = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
 			
+			/*
+			String messageToServer= "!login bill sdfds";
+			log.info(messageToServer);
+			writer.println(messageToServer);
+			
+			String ret = reader.readLine();
+			
+			log.info("return; " +ret);
+			*/
 			//wait for closing signal
 			while(!this.isClosed){
-				
+						
 			}
 		
 		} catch (IOException e) {	//if chatserver gets down handle exception
