@@ -83,13 +83,24 @@ public class HandlerTCP implements Runnable{
 		}
 	}
 	
-	public String checkCommand(String message){
+	public String checkCommand(String command){
 		
 		//TODO return with error if not !messages
 		
+		
+		if(command.startsWith("!send")){
+			
+			String message = command.substring(6);	       //cuts off !send 
+			String user_message = name + ": " + message;   //name of sender + message
+			
+			//send to all online clients
+			
+		}
+		
 		String retMessage = "";
 		String[] splittedStirings=null;
-		splittedStirings =  message.split(" ");
+		splittedStirings =  command.split(" ");
+		
 		
 		log.info("String split [0] = " + splittedStirings[0]);
 		
@@ -99,6 +110,7 @@ public class HandlerTCP implements Runnable{
 			
 			log.info("String split [1][2] = " + splittedStirings[1] + "  " + splittedStirings[2]);
 			if(this.chatServerData.checkLogin(splittedStirings[1], splittedStirings[2])){
+				this.name = splittedStirings[1];
 				retMessage = "Successfully logged in.";
 			}
 			else
@@ -107,7 +119,11 @@ public class HandlerTCP implements Runnable{
 	
 		case "!logout":
 			
+			log.info(this.chatServerData.getAllUsers());
+			log.info("username to be logged out:" + this.name);
 			this.chatServerData.logout(this.name);
+			log.info("should be logged out");
+			log.info(this.chatServerData.getAllUsers());
 			retMessage = "Successfully logged out.";
 			break;
 		}

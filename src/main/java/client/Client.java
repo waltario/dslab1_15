@@ -18,7 +18,7 @@ import util.Config;
 public class Client implements IClientCli, Runnable {
 
 	private static final Logger log = Logger.getLogger(Client.class.getName());
-	
+	 
 	private String componentName;
 	private Config config;
 	private InputStream userRequestStream;
@@ -37,8 +37,6 @@ public class Client implements IClientCli, Runnable {
 	private HandlerTCP handlerTCP;
 	private ClientHandlerUDP clientHandlerUDP;
 	private Thread t_handlerUDP;
-	
-	
 	
 	//additional variables
 
@@ -91,29 +89,12 @@ public class Client implements IClientCli, Runnable {
 
 	@Override
 	public void run() {
-		// TODO
+	
+	
 		
-		try {
-			
-			//create new socket and forward to thread, start thread
-			this.clientSocket = new Socket(chatserver_name, chatserver_tcp_port);
-			this.handlerTCP = new HandlerTCP(this.clientSocket);
-			this.t_clientSocket = new Thread(this.handlerTCP);
-			this.t_clientSocket.start();
-			
-			this.clientHandlerUDP = new ClientHandlerUDP();
-			this.t_handlerUDP = new Thread(clientHandlerUDP);
-			this.t_handlerUDP.start();
-			
-
-		} catch (UnknownHostException e) {
-			
-			e.printStackTrace();
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}
-		
+		this.clientHandlerUDP = new ClientHandlerUDP();
+		this.t_handlerUDP = new Thread(clientHandlerUDP);
+		this.t_handlerUDP.start();
 		
 	}
 
@@ -121,11 +102,35 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String login(String username, String password) throws IOException {
 		
+		
+		
 		if(this.checkLogStatus())
 			return "User " + username + " already logged in.";
 		
+		//create new socket and forward to thread, start thread
+				try {
+					this.clientSocket = new Socket(chatserver_name, chatserver_tcp_port);
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				this.handlerTCP = new HandlerTCP(this.clientSocket);
+				this.t_clientSocket = new Thread(this.handlerTCP);
+				this.t_clientSocket.start();
+		
 		String serverMessage = handlerTCP.login(username, password);
-		this.isLoggedIn = true;
+		
+		if(serverMessage.startsWith("Successfully"))
+			this.isLoggedIn = true;
+		else{
+		    log.info("login not successfull");
+			this.handlerTCP.close();
+		
+		}
+			
 		return serverMessage;
 		
 	}
@@ -137,50 +142,74 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "User is already logged out.";
 				
-		return handlerTCP.logout();
+		this.isLoggedIn = false;
+		String s = handlerTCP.logout();
+		handlerTCP.close();
+		return s;
 	}
 
 	@Override
+	@Command
 	public String send(String message) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		//TODO implement
+		
+		if(!this.checkLogStatus())
+			return "You must login to use !send command.";
+		
+		return this.handlerTCP.send(message);
 	}
 
 	@Override
 	@Command
 	public String list() throws IOException {
-		log.info("list command enterd");
 		return this.clientHandlerUDP.list(this.chatserver_name,this.chatserver_udp_port);
 	}
 
 	@Override
+	@Command
 	public String msg(String username, String message) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		//TODO implement
+		
+		if(!this.checkLogStatus())
+			return "You must login to use !msg command.";
+		
+		return this.handlerTCP.msg(username, message);
 	}
 
 	@Override
+	@Command
 	public String lookup(String username) throws IOException {
-		// TODO Auto-generated method stub
+		//TODO implement
+		if(!this.checkLogStatus())
+			return "You must login to use !lookup command.";
+		
 		return null;
 	}
 
 	@Override
+	@Command
 	public String register(String privateAddress) throws IOException {
-		// TODO Auto-generated method stub
+		//TODO implement
+		if(!this.checkLogStatus())
+			return "You must login to use !register command.";
+		
 		return null;
 	}
 	
 	@Override
+	@Command
 	public String lastMsg() throws IOException {
-		// TODO Auto-generated method stub
+		//TODO implement
+		if(!this.checkLogStatus())
+			return "You must login to use !lastMsg command.";
+		
 		return null;
 	}
 
 	@Override
 	@Command
 	public String exit() throws IOException {
-		// TODO Auto-generated method stub
+	
 		
 		this.handlerTCP.close();
 		this.clientHandlerUDP.close();
