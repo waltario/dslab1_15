@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class HandlerTCP implements Runnable{
@@ -17,11 +19,13 @@ public class HandlerTCP implements Runnable{
 	private PrintWriter writer;
 	private BufferedReader reader;
 	private ChatServerData chatServerData;	//Singleton object to access central user data
+	private boolean isSingleMessage;
 	
 	
 	public HandlerTCP(Socket tcpSocket) {
 		this.tcpSocket = tcpSocket;
 		this.isClosed = false;
+		this.isSingleMessage = false;
 		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
 		
 		try {
@@ -32,6 +36,10 @@ public class HandlerTCP implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void writeToClient(String s){
+		this.writer.println(s);
 	}
 	
 	public void shutdown(){
@@ -48,6 +56,10 @@ public class HandlerTCP implements Runnable{
 		
 		
 	}
+	public String getName(){
+		return this.name;
+	}
+	
 	
 	@Override
 	public void run() {
@@ -71,7 +83,8 @@ public class HandlerTCP implements Runnable{
 						log.info("message received from client");
 						String messageToClient = this.checkCommand(message);
 						log.info(messageToClient);
-						writer.println(messageToClient);
+						if(!this.isSingleMessage)
+							writer.println(messageToClient);
 					
 						
 				} catch (IOException e) {
@@ -79,7 +92,8 @@ public class HandlerTCP implements Runnable{
 					this.isClosed = true;	//if exeception occurs -> kill while(true) -> 
 				}
 			
-				
+				//normal receive <-> send messages
+				this.isSingleMessage = false;
 		}
 	}
 	
@@ -90,10 +104,19 @@ public class HandlerTCP implements Runnable{
 		
 		if(command.startsWith("!send")){
 			
+			log.info("!send message detected");
+			this.isSingleMessage = true;
 			String message = command.substring(6);	       //cuts off !send 
 			String user_message = name + ": " + message;   //name of sender + message
 			
 			//send to all online clients
+			
+			for(HandlerTCP item : this.chatServerData.getAllOnlineTCPHandler(this.name)){
+				
+				//TODO return to all clients, except sender, the public message
+				log.info("send to client" + item.getName());
+				item.writeToClient(user_message);
+			}
 			
 		}
 		

@@ -1,6 +1,8 @@
 package chatserver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -12,17 +14,29 @@ public class ChatServerData {
 	
 	private Map<String,String> passwordMap;	//saves Username / Password
 	private Map<String,String> usersMap;	//save online / offline status for users
+	private List<HandlerTCP> clientList = null;
 	
 	private ChatServerData() {
 		
 		this.passwordMap = new HashMap<String,String>();
 		this.usersMap = new HashMap<String,String>();	
+		this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
 		
 	}
 	
 	public void initUsers(String username, String password){
 		this.passwordMap.put(username, password);	//save username and password
 		this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
+	}
+	public List<HandlerTCP> getHandlerTCPList(){
+		return this.clientList;
+	}
+	public void addTCPHandler(HandlerTCP item){
+		clientList.add(item);
+	}
+	
+	public void removeTCPHandler(String item){
+		//TODO
 	}
 	
 	public void addUser(String username, String password){
@@ -48,6 +62,32 @@ public class ChatServerData {
 		}
 		
 		return allUserListStatus;
+	}
+	
+	public List<String> getAllOnlineUsers(){
+		
+		List onlineUsers = new ArrayList<String>();
+		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
+			if(entry.getValue().equals("online"))
+				onlineUsers.add(entry.getKey());
+		}
+		
+		return onlineUsers;
+	}
+	
+	public List<HandlerTCP> getAllOnlineTCPHandler(String sender){
+		
+		List<HandlerTCP> handler = new ArrayList<HandlerTCP>();
+		for(HandlerTCP item : this.getHandlerTCPList()){
+			for(String htcp : this.getAllOnlineUsers()){
+			
+					if(item.getName().equals(htcp) && !item.getClass().equals(sender)){
+						handler.add(item);
+					}
+			}
+		}
+		log.info(" " + handler.size() + " online HandlerTCP at the moment");
+		return handler;
 	}
 	
 	

@@ -20,15 +20,17 @@ public class ChatServerListenerTCP implements Runnable{
 	ServerSocket serverSocket;
 	private Config config;
 	private ExecutorService executor;
-	private List<HandlerTCP> clientList = null;
+	//private List<HandlerTCP> clientList = null;
 	private boolean isClosed;
+	private ChatServerData chatServerData;	//Singleton object to access central user data
 	
 	
 	public ChatServerListenerTCP(Config config) {
 		this.config = config;
 		this.serverSocket = null;
 		this.isClosed = false;
-		this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
+		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
+		//this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
 		executor = Executors.newFixedThreadPool(100);	
 		
 	}
@@ -47,8 +49,10 @@ public class ChatServerListenerTCP implements Runnable{
 			}
 		}
 		
-		for(HandlerTCP shutdownHandler : this.clientList)	//shutdown all TCPHandler Connections to Clients
+		//try2
+		for(HandlerTCP shutdownHandler : this.chatServerData.getHandlerTCPList()){	//shutdown all TCPHandler Connections to Clients
 			shutdownHandler.shutdown();
+		}
 		
 		try {
 		     // Wait a while for existing tasks to terminate
@@ -81,7 +85,8 @@ public class ChatServerListenerTCP implements Runnable{
 				Socket client = serverSocket.accept();				//waiting for incoming tcp request from client
 				HandlerTCP handlerTCP = new HandlerTCP(client);		//create new HandlerTCP
 				executor.execute(handlerTCP);						//start new Thread
-				this.clientList.add(handlerTCP);					//add to managed client list
+				//this.clientList.add(handlerTCP);					//add to managed client list
+				this.chatServerData.addTCPHandler(handlerTCP);
 				
 				log.info("new HandlerTCP created");
 			}
