@@ -15,19 +15,50 @@ public class ChatServerData {
 	private Map<String,String> passwordMap;	//saves Username / Password
 	private Map<String,String> usersMap;	//save online / offline status for users
 	private List<HandlerTCP> clientList = null;
+	private Map<String,String> registeredUsers;
 	
 	private ChatServerData() {
 		
 		this.passwordMap = new HashMap<String,String>();
 		this.usersMap = new HashMap<String,String>();	
 		this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
-		
+		this.registeredUsers = new HashMap<String,String>();
 	}
 	
 	public void initUsers(String username, String password){
 		this.passwordMap.put(username, password);	//save username and password
 		this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
 	}
+	
+	
+	//### private Message commands ###
+	public String lookup(String username){
+		
+		
+		log.info("look up: " + username);
+		String ipAdress;
+		
+		if(this.registeredUsers.containsKey(username)){
+			ipAdress  = this.registeredUsers.get(username);
+			log.info("ip: " + ipAdress);
+			return ipAdress;
+		}
+		
+		return "Wrong username or user not reachable.";	
+		
+	}
+	
+	public boolean register(String ip,String username){
+		
+		if(this.registeredUsers.containsKey(username))
+			return false; 
+		else{
+			this.registeredUsers.put(username, ip);
+			return true;
+		}
+	}
+	
+	
 	public List<HandlerTCP> getHandlerTCPList(){
 		return this.clientList;
 	}
@@ -63,6 +94,20 @@ public class ChatServerData {
 		
 		return allUserListStatus;
 	}
+	
+	public String getAllRegUsers(){
+		
+		String allUserListStatus = "";
+		for(Map.Entry<String, String> entry : this.registeredUsers.entrySet()){
+			allUserListStatus += entry.getKey();
+			allUserListStatus += " ";
+			allUserListStatus += entry.getValue();
+			allUserListStatus += "\n";
+		}
+		
+		return allUserListStatus;
+	}
+	
 	
 	public List<String> getAllOnlineUsers(){
 		

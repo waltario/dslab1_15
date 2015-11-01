@@ -29,8 +29,10 @@ public class Client implements IClientCli, Runnable {
 	
 	private String chatserver_name;
 	private int chatserver_tcp_port;
+	private int tcp_port_count;
 	private int chatserver_udp_port;
 	private boolean isLoggedIn;
+	private String lastMessage;
 	
 	private Socket clientSocket;
 	private Thread t_clientSocket;
@@ -59,6 +61,7 @@ public class Client implements IClientCli, Runnable {
 		this.clientSocket = null;
 		this.t_clientSocket = null;
 		this.handlerTCP = null;
+		this.lastMessage = null;
 		
 		//register shell
 		this.shell = new Shell(componentName, userRequestStream, userResponseStream);
@@ -76,6 +79,7 @@ public class Client implements IClientCli, Runnable {
 		this.chatserver_name = config.getString("chatserver.host");
 		this.chatserver_tcp_port = config.getInt("chatserver.tcp.port");
 		this.chatserver_udp_port = config.getInt("chatserver.udp.port");
+		this.tcp_port_count = this.chatserver_tcp_port;
 		
 		this.isLoggedIn = false;
 	
@@ -90,8 +94,6 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	public void run() {
 	
-	
-		
 		this.clientHandlerUDP = new ClientHandlerUDP();
 		this.t_handlerUDP = new Thread(clientHandlerUDP);
 		this.t_handlerUDP.start();
@@ -127,6 +129,7 @@ public class Client implements IClientCli, Runnable {
 			this.isLoggedIn = true;
 		else{
 		    log.info("login not successfull");
+		    //TODO exception username worng 
 			this.handlerTCP.close();
 		
 		}
@@ -156,7 +159,8 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "You must login to use !send command.";
 		
-		return this.handlerTCP.send(message);
+		this.lastMessage = this.handlerTCP.send(message);
+		return this.lastMessage;
 	}
 
 	@Override
@@ -183,7 +187,7 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "You must login to use !lookup command.";
 		
-		return null;
+		return this.handlerTCP.lookup(username);
 	}
 
 	@Override
@@ -193,7 +197,8 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "You must login to use !register command.";
 		
-		return null;
+		//return this.handlerTCP.register(privateAddress + ":" + Integer.toString(this.tcp_port_count++));
+		return this.handlerTCP.register(privateAddress);
 	}
 	
 	@Override
@@ -203,7 +208,10 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "You must login to use !lastMsg command.";
 		
-		return null;
+		if(this.lastMessage == null)
+			return "No message received!";
+		else
+			return this.lastMessage;
 	}
 
 	@Override

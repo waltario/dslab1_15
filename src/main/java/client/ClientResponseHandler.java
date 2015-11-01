@@ -50,12 +50,15 @@ public class ClientResponseHandler implements Runnable {
 				
 				this.message = this.reader.readLine();
 				
+				log.info("message returned: " + this.message);
 				boolean test1 = message.substring(0,3).matches("\\d+");
 				boolean test2 = this.message.startsWith("Successfully");
+				boolean test3 = this.message.startsWith("Wrong");
 				
-				if( test1 || test2){
-					this.isMessage = true;
+				if( test1 || test2 || test3){
+				
 					this.retMessage = this.message;
+					this.isMessage = true;
 				}
 				else{
 					System.out.println(this.message);

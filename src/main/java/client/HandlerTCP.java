@@ -4,13 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import chatserver.ChatServerListenerTCP;
 
 public class HandlerTCP implements Runnable {
 
@@ -19,21 +20,39 @@ public class HandlerTCP implements Runnable {
 	private PrintWriter writer;
 	private BufferedReader reader;
 	private Socket clientSocket;
+
+	private ClientPrivatServer clientPrivateServer;
 	private boolean isClosed;
 	private boolean loggedIn;
+	private boolean isRegistered;
+	
+	//privateMessge Vars
+	private Socket privateSocket;
+	private int tcp_port_private;
+	
 	//private Thread t_MessageChecker;
 	private ExecutorService executor;
+	private ExecutorService privateExecutor;
+	private ExecutorService privateServerExecutor;
 	private ClientResponseHandler responseHandler;
 	
 	public HandlerTCP(Socket clientSocket) {
 	
 		this.clientSocket = clientSocket;
+		this.clientPrivateServer = null;
 		this.writer = null;
 		this.reader = null;
 		init();
 		this.isClosed = false;
 		this.loggedIn = false;
+		this.isRegistered = false;
 		executor = Executors.newFixedThreadPool(1);	
+		privateExecutor = Executors.newFixedThreadPool(1);	
+		privateServerExecutor = Executors.newFixedThreadPool(1);
+		
+		//private Message Vars
+		this.privateSocket = null; 
+	
 	}
 	
 	public void init(){
@@ -121,10 +140,42 @@ public class HandlerTCP implements Runnable {
 		//return reader.readLine();	
 	}
 	
-	public String msg(String username, String message){
+	public String msg(String username, String message) throws NumberFormatException, UnknownHostException, IOException{
 		
-		
-		return null;
+		//do lookup to check if user has been registered
+		String lookupMessage = this.lookup(username);
+		if(lookupMessage.startsWith("Wrong"))
+			return lookupMessage;
+		else{
+		//user is registered -> create new tcp connection to contact user/client
+			log.info("lookup successfull");
+			log.info("private ip adress client user: " + lookupMessage);
+			//extract ip + port -> expected e.g. 192.168.0.2:4563
+			
+			String ip = lookupMessage.substring(0,lookupMessage.length()-6);
+			String port = lookupMessage.substring(lookupMessage.length()-5);
+			log.info("iA: "+ ip + " port: " + port); 
+			//create new socket
+			//TODO close private Socket and privateExecutor
+			
+			//this.privateSocket = new Socket(InetAddress.getByName(""), Integer.parseInt(port));
+			this.privateSocket = new Socket(InetAddress.getByName(ip), Integer.parseInt(port));
+			//this.privateSocket = new Socket(InetAddress.getByName(ip), Integer.parseInt(port));
+			HandlerPrivateTCP privateHandler =  new HandlerPrivateTCP(this.privateSocket);
+			privateExecutor.execute(privateHandler);
+			log.info("new socket and it runs -> message: " + message);
+			if(privateHandler.msg(message)){
+				privateHandler.close();
+				privateExecutor.shutdown();
+				return (username + " replied with !ack.");
+			}
+			else{
+				privateHandler.close();
+				privateExecutor.shutdown();
+				return "Wrong username or user not reachable";
+			}
+				
+		}
 	}
 	
 	public String lastMsg(){
@@ -140,14 +191,33 @@ public class HandlerTCP implements Runnable {
 		//return  reader.readLine();
 	}
 	
-	public String lookup(){
-		//TODO implement
-		return null;
+	public String lookup(String username){
+		
+		log.info("try to lookup: " + username);
+		writer.println("!lookup " + username);
+		return this.responseHandler.getResult();
 	}
 	
-	public String register(){
-		//TODO implement
-		return null;
+	public String register(String privateIPAdress){
+	
+		log.info("try to register " + privateIPAdress);
+		
+		writer.println("!register " + privateIPAdress);
+		
+		String s = this.responseHandler.getResult();
+		log.info("resonse register: " + s);
+		
+		if(!this.isRegistered && s.startsWith("Successfully")){
+			
+			log.info("Registered");
+			this.tcp_port_private = Integer.valueOf(privateIPAdress.substring(privateIPAdress.length()-5));
+			log.info("registered -> open serverSocket " + this.tcp_port_private);
+			this.clientPrivateServer = new ClientPrivatServer(this.tcp_port_private);
+			privateServerExecutor.execute(clientPrivateServer);
+		
+			this.isRegistered = true;
+		}
+		return s;
 	}
 	
 	

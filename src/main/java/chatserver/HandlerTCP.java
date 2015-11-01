@@ -33,7 +33,7 @@ public class HandlerTCP implements Runnable{
 			this.reader = new BufferedReader(new InputStreamReader(this.tcpSocket.getInputStream()));
 		
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}
@@ -89,6 +89,7 @@ public class HandlerTCP implements Runnable{
 						
 				} catch (IOException e) {
 					//e.printStackTrace();
+					this.chatServerData.setUserOffline(this.name);
 					this.isClosed = true;	//if exeception occurs -> kill while(true) -> 
 				}
 			
@@ -149,7 +150,32 @@ public class HandlerTCP implements Runnable{
 			log.info(this.chatServerData.getAllUsers());
 			retMessage = "Successfully logged out.";
 			break;
+		
+
+		case "!register":
+			
+			log.info("!register command: " + splittedStirings[0] + " " + splittedStirings[1]);
+			
+			if(this.chatServerData.register(splittedStirings[1], this.name)){
+				
+				log.info("### ALL REG USERS ### "+this.chatServerData.getAllRegUsers());
+				retMessage = "Successfully registered adress for "+ this.name + ".";
+			}
+			else
+				retMessage = "User with that name already registered";
+			break;
+			
+		case "!lookup":
+			log.info("!lookup command: " + splittedStirings[0] + " " + splittedStirings[1]);
+			
+			log.info("+++ all reg Users +++\n)");
+			log.info(this.chatServerData.getAllRegUsers());
+			
+			retMessage = this.chatServerData.lookup(splittedStirings[1]);
+			log.info("return String !lookup: " + retMessage);
+			break;
 		}
+		
 		
 		return retMessage;
 	
