@@ -31,13 +31,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private Shell shell;
 	
 	//additional variables
-	// TODO replace with chatsever data instance
-	
 	private ChatServerData chatServerData;
 	
-	//private Map<String,String> passwordMap;	//saves Username / Password
-	//private Map<String,String> usersMap;	//save online / offline status for users
-
 	private int tcpPort;
 	private int udpPort;
 	
@@ -71,24 +66,45 @@ public class Chatserver implements IChatserverCli, Runnable {
 		//start shell thread 
 		new Thread(shell).start();;
 		
-		//TODO replace
 		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
-		
-		//this.passwordMap = new HashMap<String,String>();
-		//this.usersMap = new HashMap<String,String>();
-		
+
 		this.init_ChatServerData();
 		
+	}
+	
+	/**
+	 * 	read config files, tcp, udp port, username, password and save in in Class ChatServerData
+	 */
+	public void init_ChatServerData(){
+		
+		Set<String> userNames = new HashSet<String>();
+		Config userConfig = new Config("user");
+		userNames = userConfig.listKeys();
+		
+		Iterator iterator = userNames.iterator();
+		while(iterator.hasNext()){
+			
+			String username_with_ending = (String) iterator.next();
+			String username = username_with_ending.substring(0, username_with_ending.length()-9); // cut off ".password" from the end of string
+			String password = userConfig.getString(username_with_ending);						  //with ending is with ".password"
+			
+			//save username in chatserver Data
+			this.chatServerData.initUsers(username, password);	
+			//log.info("user name user.properties: " + username + " password: " + password);
+		}
+		
+		//log.info(this.chatServerData.getAllUsers());
+		this.tcpPort = config.getInt("tcp.port");
+		this.udpPort = config.getInt("udp.port");
 	}
 
 	@Override
 	@Command
 	public void run() {
-		
-		
+			
 		//create listener for TCP and UDP
-		this.chatServerListenerTCP = new ChatServerListenerTCP(this.config);
-		this.chatServerListenerUDP = new ChatServerListenerUDP(this.config);
+		this.chatServerListenerTCP = new ChatServerListenerTCP(this.tcpPort);
+		this.chatServerListenerUDP = new ChatServerListenerUDP(this.udpPort);
 		
 		//create new Theads for TCP and UDP
 		this.t_chatServerListenerTCP = new Thread(this.chatServerListenerTCP);
@@ -115,7 +131,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 	@Override
 	@Command
 	public String exit() throws IOException {
-		// TODO Auto-generated method stub
 		
 		chatServerListenerTCP.close();	//send TCP listener closing event
 		chatServerListenerUDP.close();  //send UDP listener closing event
@@ -124,62 +139,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		return null;
 	}
 
-	
-	
-	/** readAllUsersFromProperties()
-	 *  reads username / password from user.properties and add to passwordMap data-structure
-	 * 
-	 */
-	public void readAllUsersFromProperties(){
 		
-		
-		/*
-		Iterator iterator = userNames.iterator();
-		while(iterator.hasNext()){
-			
-			String username_with_ending = (String) iterator.next();
-			String username = username_with_ending.substring(0, username_with_ending.length()-9); // cut off ".password" from the end of string
-			String password = userConfig.getString(username_with_ending);						  //with ending is with ".password"
-			this.passwordMap.put(username, password);	//save username and password
-			this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
-			
-			
-			log.info("user name user.properties: " + username + " password: " + password);
-		}
-		
-		this.tcpPort = config.getInt("tcp.port");
-		this.udpPort = config.getInt("udp.port");
-		*/
-		//log.info("tcp_port: " + this.tcpPort + " udp_port: " + this.udpPort );
-	}
-	
-	public void init_ChatServerData(){
-		
-		Set<String> userNames = new HashSet<String>();
-		Config userConfig = new Config("user");
-		userNames = userConfig.listKeys();
-		
-		Iterator iterator = userNames.iterator();
-		while(iterator.hasNext()){
-			
-			String username_with_ending = (String) iterator.next();
-			String username = username_with_ending.substring(0, username_with_ending.length()-9); // cut off ".password" from the end of string
-			String password = userConfig.getString(username_with_ending);						  //with ending is with ".password"
-			
-			this.chatServerData.initUsers(username, password);
-			
-			//this.passwordMap.put(username, password);	//save username and password
-			//this.usersMap.put(username, "offline");		//at init all users are offline, save username and online / offline status
-			
-			//log.info("user name user.properties: " + username + " password: " + password);
-		}
-		
-		//log.info(this.chatServerData.getAllUsers());
-		
-		this.tcpPort = config.getInt("tcp.port");
-		this.udpPort = config.getInt("udp.port");
-	}
-	
 	/**
 	 * @param args
 	 *            the first argument is the name of the {@link Chatserver}
@@ -188,9 +148,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 	public static void main(String[] args) {
 		Chatserver chatserver = new Chatserver(args[0],
 				new Config("chatserver"), System.in, System.out);
-		
-		//read username / password from user.properties
-		//chatserver.readAllUsersFromProperties();	//redone by init_chatserverdata()
 		
 		Thread chatServerTread = new Thread(chatserver);
 		chatServerTread.run(); 

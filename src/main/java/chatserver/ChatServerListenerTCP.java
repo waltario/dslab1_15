@@ -3,36 +3,29 @@ package chatserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
-import util.Config;
 
 public class ChatServerListenerTCP implements Runnable{
 
 	private static final Logger log = Logger.getLogger(ChatServerListenerTCP.class.getName());
 	
 	ServerSocket serverSocket;
-	private Config config;
 	private ExecutorService executor;
-	//private List<HandlerTCP> clientList = null;
-	private boolean isClosed;
 	private ChatServerData chatServerData;	//Singleton object to access central user data
+	private int tcpPort;
+	private boolean isClosed;
 	
-	
-	public ChatServerListenerTCP(Config config) {
-		this.config = config;
+	public ChatServerListenerTCP(int tcpPort) {
+		this.tcpPort = tcpPort;
 		this.serverSocket = null;
 		this.isClosed = false;
 		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
-		//this.clientList = new ArrayList<HandlerTCP>();	//save all TCPHandler Connections to Clients -> needed for shtudown
-		executor = Executors.newFixedThreadPool(100);	
-		
+		executor = Executors.newFixedThreadPool(25);	
 	}
 	
 	public void close(){
@@ -40,7 +33,7 @@ public class ChatServerListenerTCP implements Runnable{
 		this.isClosed = true;
 		executor.shutdown();			//dont accept any incoming threads
 		
-		if(serverSocket !=null){		
+		if(serverSocket !=null && !serverSocket.isClosed()){		
 			try {
 				serverSocket.close();	
 				
@@ -49,7 +42,7 @@ public class ChatServerListenerTCP implements Runnable{
 			}
 		}
 		
-		//try2
+		//close all open HandlerTCP connections 
 		for(HandlerTCP shutdownHandler : this.chatServerData.getHandlerTCPList()){	//shutdown all TCPHandler Connections to Clients
 			shutdownHandler.shutdown();
 		}
@@ -77,7 +70,7 @@ public class ChatServerListenerTCP implements Runnable{
 		
 		try {
 			
-			serverSocket = new ServerSocket(this.config.getInt("tcp.port"));
+			serverSocket = new ServerSocket(this.tcpPort);
 			log.info("ChatServerListenerTCP established tcp connection");
 			
 			while(!this.isClosed){
@@ -85,7 +78,6 @@ public class ChatServerListenerTCP implements Runnable{
 				Socket client = serverSocket.accept();				//waiting for incoming tcp request from client
 				HandlerTCP handlerTCP = new HandlerTCP(client);		//create new HandlerTCP
 				executor.execute(handlerTCP);						//start new Thread
-				//this.clientList.add(handlerTCP);					//add to managed client list
 				this.chatServerData.addTCPHandler(handlerTCP);
 				
 				log.info("new HandlerTCP created");
@@ -93,10 +85,9 @@ public class ChatServerListenerTCP implements Runnable{
 			
 		} catch (IOException e) {
 			
-			//log.severe("Not able to establis tcp coonection on port" + this.config.getInt("tcp.port"));
-			//e.printStackTrace();
+		} finally {
+			this.close();
 		}
-		
 		
 	}
 	

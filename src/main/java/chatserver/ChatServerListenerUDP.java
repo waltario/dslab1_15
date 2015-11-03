@@ -16,14 +16,16 @@ public class ChatServerListenerUDP implements Runnable{
 	
 	private static final Logger log = Logger.getLogger(ChatServerListenerUDP.class.getName());
 
-	private Config config;
 	private DatagramSocket datagramSocket;
 	private ExecutorService executor;
-	private boolean isClosed = false;
+	private int tcpPort;
+	private boolean isClosed;
 	
-	public ChatServerListenerUDP(Config config) {
-		this.config = config;
-		executor = Executors.newFixedThreadPool(100);
+	public ChatServerListenerUDP(int tcpPort) {
+		this.tcpPort = tcpPort;
+		datagramSocket = null;
+		this.isClosed = false;
+		executor = Executors.newFixedThreadPool(25);
 	}
 
 	public void close(){
@@ -54,17 +56,16 @@ public class ChatServerListenerUDP implements Runnable{
 	@Override
 	public void run() {
 		
-		log.info("ServerUDPListener running");
+		log.info("ServerUDPListener running...");
 		
 		try {
 			
-			log.info("udp port: " + config.getInt("udp.port"));
-			datagramSocket = new DatagramSocket(config.getInt("udp.port"));
+			datagramSocket = new DatagramSocket(this.tcpPort);
 			
 			byte[] buffer;
 			DatagramPacket packet;
 			
-		
+				//while not shut down waiting for incoming udp packets -> hand over to FixedThreadPool
 				while (!this.isClosed) {
 					
 					buffer = new byte[1024];
@@ -76,11 +77,12 @@ public class ChatServerListenerUDP implements Runnable{
 				}
 			
 		} catch (SocketException e) {
-			
 			//e.printStackTrace();
 		} catch (IOException e) {
-			
 			//e.printStackTrace();
+		} finally {
+			if (datagramSocket != null && !datagramSocket.isClosed())
+				datagramSocket.close();
 		}
 		
 	}
