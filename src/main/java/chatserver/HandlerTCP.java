@@ -18,6 +18,7 @@ public class HandlerTCP implements Runnable{
 	private ChatServerData chatServerData;	//Singleton object to access central user data
 	private boolean isSingleMessage;		//false = is a pulbic message send to all online Clients, true = send 1 message tcp response
 	private boolean isClosed;				//false = HandlerTCP running
+	private boolean isLoggedOut;
 	
 	
 	public HandlerTCP(Socket tcpSocket) {
@@ -25,6 +26,7 @@ public class HandlerTCP implements Runnable{
 		this.writer = null;
 		this.reader = null;
 		this.isClosed = false;
+		this.isLoggedOut = false;
 		this.isSingleMessage = false;
 		this.chatServerData = ChatServerData.getChatSeverDataSingleton();
 		
@@ -44,10 +46,12 @@ public class HandlerTCP implements Runnable{
 	public void shutdown(){
 		
 		this.isClosed= true;	
-		if(this.name != null)
-			this.chatServerData.setUserOffline(this.name);
+		if(this.name != null){
+			//logout set user offline and deletes TCPHandler from list and clis
+			chatServerData.logout(this.name);
+			chatServerData.removeTCPHandler(this.name);
 			//TODO delete from list chatseverdata
-		
+		}
 		//TODO logout user if destroyed? enough
 		
 		try {
@@ -96,13 +100,15 @@ public class HandlerTCP implements Runnable{
 						
 						//normal receive <-> send messages
 						this.isSingleMessage = false;
+						if(this.isLoggedOut)									//shutdown TCP Connection
+							this.shutdown();
 						
 				} catch (IOException e) {
-				
+					this.shutdown();
 					//this.chatServerData.setUserOffline(this.name);
 					//this.isClosed = true;	//if exeception occurs -> kill while(true) -> 
 				}	finally {
-					this.shutdown();
+					
 				}
 		}
 	}
@@ -152,6 +158,7 @@ public class HandlerTCP implements Runnable{
 					}
 					else
 						retMessage = "Wrong username or password.";
+					
 					break;
 			
 				case "!logout":
@@ -159,10 +166,20 @@ public class HandlerTCP implements Runnable{
 					//TODO -> delete user from list
 					log.info(this.chatServerData.getAllUsers());
 					log.info("username to be logged out:" + this.name);
-					this.chatServerData.logout(this.name);
+					
+					if(this.chatServerData.logout(this.name)){				//logout user
+						this.chatServerData.removeTCPHandler(this.name);	// remove user from tcpHanlder List
+						this.isLoggedOut =true;								//send successfully logout but destroy TCP after
+						this.name = null;									//in shutdown function -> logout/remove user not twice done
+						retMessage = "Successfully logged out.";
+						
+					}
+					else
+						retMessage = "### ERROR - Not able to logout User / User not available ###";
+					
 					log.info("should be logged out");
 					log.info(this.chatServerData.getAllUsers());
-					retMessage = "Successfully logged out.";
+					
 					break;
 				
 		
@@ -176,7 +193,7 @@ public class HandlerTCP implements Runnable{
 						retMessage = "Successfully registered adress for "+ this.name + ".";
 					}
 					else
-						retMessage = "User with that name already registered";
+						retMessage = "User with name already registered";
 					break;
 					
 				case "!lookup":

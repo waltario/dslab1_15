@@ -29,8 +29,8 @@ public class Client implements IClientCli, Runnable {
 	
 	private String chatserver_name;
 	private int chatserver_tcp_port;
-	private int tcp_port_count;
 	private int chatserver_udp_port;
+	
 	private boolean isLoggedIn;
 	private String lastMessage;
 	
@@ -79,7 +79,6 @@ public class Client implements IClientCli, Runnable {
 		this.chatserver_name = config.getString("chatserver.host");
 		this.chatserver_tcp_port = config.getInt("chatserver.tcp.port");
 		this.chatserver_udp_port = config.getInt("chatserver.udp.port");
-		this.tcp_port_count = this.chatserver_tcp_port;
 		
 		this.isLoggedIn = false;
 	

@@ -54,8 +54,10 @@ public class ClientResponseHandler implements Runnable {
 				boolean test1 = message.substring(0,3).matches("\\d+");
 				boolean test2 = this.message.startsWith("Successfully");
 				boolean test3 = this.message.startsWith("Wrong");
+				boolean test4 = this.message.startsWith("###");
+				//TODO Add more response strings
 				
-				if( test1 || test2 || test3){
+				if( test1 || test2 || test3 || test4){
 				
 					this.retMessage = this.message;
 					this.isMessage = true;
