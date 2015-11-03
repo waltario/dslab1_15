@@ -71,6 +71,9 @@ public class HandlerTCP implements Runnable {
 		
 		this.isClosed = true;
 		executor.shutdown();			//dont accept any incoming threads
+		
+		privateExecutor.shutdown();
+		privateServerExecutor.shutdown();
 		writer.close();
 		try {
 			reader.close();
@@ -226,23 +229,10 @@ public class HandlerTCP implements Runnable {
 		
 		log.info("Client HandlerTCP running");
 		
-		//start Streams
 		try {
-			
-			
-		
-			
+						
 			while(!this.isClosed){
-					
-				/*
-					//try1 			
-					if(this.loggedIn){					//only accept incoming responses from server if logged in
-						log.info("logged in: waiting for any messages");
-						sendMessage = reader.readLine();
-						log.info("received any message -> add to queue");
-						this.responseHandler.add(sendMessage);
-					}
-				*/			
+	
 			}
 		
 		} finally {

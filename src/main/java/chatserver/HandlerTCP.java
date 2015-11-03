@@ -48,8 +48,11 @@ public class HandlerTCP implements Runnable{
 		this.isClosed= true;	
 		if(this.name != null){
 			//logout set user offline and deletes TCPHandler from list and clis
+			log.info("try to logout via shutdown");
 			chatServerData.logout(this.name);
+			log.info("try to remove");
 			chatServerData.removeTCPHandler(this.name);
+			log.info("removed");
 			//TODO delete from list chatseverdata
 		}
 		//TODO logout user if destroyed? enough
@@ -154,11 +157,15 @@ public class HandlerTCP implements Runnable{
 					log.info("String split [1][2] = " + splittedStirings[1] + "  " + splittedStirings[2]);
 					if(this.chatServerData.checkLogin(splittedStirings[1], splittedStirings[2])){
 						this.name = splittedStirings[1];
+						//TODO right?
+						this.chatServerData.addTCPHandler(this);
 						retMessage = "Successfully logged in.";
 					}
-					else
+					else{
 						retMessage = "Wrong username or password.";
-					
+						//TODOD Rright? not registerd -> close tcp connection
+						this.isLoggedOut = true;
+					}
 					break;
 			
 				case "!logout":

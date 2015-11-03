@@ -1,9 +1,11 @@
 package chatserver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class ChatServerData {
@@ -19,10 +21,10 @@ public class ChatServerData {
 	
 	private ChatServerData() {
 		
-		this.passwordMap = new HashMap<String,String>();
-		this.usersMap = new HashMap<String,String>();	
-		this.clientList = new ArrayList<HandlerTCP>();	
-		this.registeredUsers = new HashMap<String,String>();
+		this.passwordMap = new ConcurrentHashMap<String,String>();
+		this.usersMap = new ConcurrentHashMap<String,String>();	
+		this.clientList = Collections.synchronizedList(new ArrayList<HandlerTCP>());	
+		this.registeredUsers = new ConcurrentHashMap<String,String>();
 	}
 	
 	/**  only used once at startup - read config file and save in users and passwords in map structure
@@ -93,7 +95,10 @@ public class ChatServerData {
 		}
 		//remove index element from list if found
 		if(positionTCPHandler != -1){
+			
 			HandlerTCP hTCPRemoved = this.clientList.remove(positionTCPHandler);
+			log.info("HAndlerTCP removed: " + hTCPRemoved.getName() );
+			log.info("Size after removing: " + this.clientList.size());
 			//hTCPRemoved.shutdown();		//close TCP Connection
 			//log.info("successfully removed tcp connection and close it");
 			return true;
@@ -140,7 +145,10 @@ public class ChatServerData {
 	
 	
 	public List<HandlerTCP> getHandlerTCPList(){
-		return this.clientList;
+		if(this.clientList.isEmpty())
+			return null;
+		else
+			return this.clientList;
 	}
 	public void addTCPHandler(HandlerTCP item){
 		clientList.add(item);

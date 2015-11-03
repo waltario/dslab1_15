@@ -3,6 +3,8 @@ package chatserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +33,19 @@ public class ChatServerListenerTCP implements Runnable{
 	public void close(){
 		
 		this.isClosed = true;
-		executor.shutdown();			//dont accept any incoming threads
+		//close all open HandlerTCP connections 
+		executor.shutdown();		
+		if(this.chatServerData.getHandlerTCPList() != null){
+			log.info("size of List HandlerTCP: " + this.chatServerData.getHandlerTCPList().size());
+			/*for(HandlerTCP shutdownHandler : this.chatServerData.getHandlerTCPList()){	//shutdown all TCPHandler Connections to Clients
+				shutdownHandler.shutdown();
+			}*/
+			List <HandlerTCP>  shutdownHandler	= this.chatServerData.getHandlerTCPList();
+			for(int i =0; i < shutdownHandler.size() ; i++ ){
+				shutdownHandler.get(i).shutdown();
+			}
+		}
+			//dont accept any incoming threads
 		
 		if(serverSocket !=null && !serverSocket.isClosed()){		
 			try {
@@ -42,10 +56,6 @@ public class ChatServerListenerTCP implements Runnable{
 			}
 		}
 		
-		//close all open HandlerTCP connections 
-		for(HandlerTCP shutdownHandler : this.chatServerData.getHandlerTCPList()){	//shutdown all TCPHandler Connections to Clients
-			shutdownHandler.shutdown();
-		}
 		
 		try {
 		     // Wait a while for existing tasks to terminate
@@ -78,7 +88,7 @@ public class ChatServerListenerTCP implements Runnable{
 				Socket client = serverSocket.accept();				//waiting for incoming tcp request from client
 				HandlerTCP handlerTCP = new HandlerTCP(client);		//create new HandlerTCP
 				executor.execute(handlerTCP);						//start new Thread
-				this.chatServerData.addTCPHandler(handlerTCP);
+				//this.chatServerData.addTCPHandler(handlerTCP);
 				
 				log.info("new HandlerTCP created");
 			}
@@ -86,7 +96,7 @@ public class ChatServerListenerTCP implements Runnable{
 		} catch (IOException e) {
 			
 		} finally {
-			this.close();
+			
 		}
 		
 	}
