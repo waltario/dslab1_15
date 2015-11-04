@@ -15,9 +15,11 @@ public class ClientResponseHandler implements Runnable {
 	private String retMessage;
 	private boolean isMessage;
 	private BufferedReader reader;
+	private String lastPublicMessage;
 	
 	public ClientResponseHandler(BufferedReader reader) {
 		
+		this.lastPublicMessage = null;
 		this.reader = reader;
 		//this.queue = new LinkedList<String>();
 		this.isClosed = false;
@@ -25,12 +27,16 @@ public class ClientResponseHandler implements Runnable {
 	}
 	
 	
-	public String  getResult(){
-		while(!this.isMessage){
-			
+	public String  getResult(){	//get TCP response for request -> no public message
+		while(!this.isMessage){	//no message received / detected
 		}
-		this.isMessage = false;
-		return this.retMessage;
+		this.isMessage = false;	//activate for next message
+		return this.retMessage;	//return to expected command
+	}
+	
+	
+	public String getLastPublicMessage(){
+		return this.lastPublicMessage;
 	}
 	
 	@Override
@@ -56,12 +62,13 @@ public class ClientResponseHandler implements Runnable {
 				//boolean test5 = this.message.startsWith("User");			//register response
 				//TODO Add more response strings
 				
-				if( test1 || test2 || test3 || test4){
+				if( test1 || test2 || test3 || test4){		//TCP req/resp message
 				
 					this.retMessage = this.message;
 					this.isMessage = true;
 				}
-				else{
+				else{										//pulic message
+					this.lastPublicMessage = this.message;
 					System.out.println(this.message);
 				}
 					
@@ -74,11 +81,7 @@ public class ClientResponseHandler implements Runnable {
 			} finally {
 				
 			}
-			
-			
-	
-		
-		
+
 	
 	}
 	

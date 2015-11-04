@@ -203,14 +203,11 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String lastMsg() throws IOException {
-		//TODO implement
+		
 		if(!this.checkLogStatus())
 			return "You must login to use !lastMsg command.";
-		
-		if(this.lastMessage == null)
-			return "No message received!";
-		else
-			return this.lastMessage;
+			
+		return this.handlerTCP.lastMsg();
 	}
 
 	@Override

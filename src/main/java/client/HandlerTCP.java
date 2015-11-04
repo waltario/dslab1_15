@@ -202,8 +202,12 @@ public class HandlerTCP implements Runnable {
 	}
 	
 	public String lastMsg(){
-		//TODO implement
-		return null;
+		
+		String retMessage = this.responseHandler.getLastPublicMessage();
+		if(retMessage == null)
+			return "No message received!";
+		else
+			return retMessage;
 	}
 	
 	public String send(String message) throws IOException{
@@ -231,7 +235,7 @@ public class HandlerTCP implements Runnable {
 		String s = this.responseHandler.getResult();	//wait for success message 
 		log.info("resonse register: " + s);
 		
-		//wenn noch nicht registriert und erfolgreich die ip eingetragen -> start den serversocket für priv adressen
+		//wenn noch nicht registriert und erfolgreich die ip eingetragen -> start den serversocket fuer priv adressen
 		if(!this.isRegistered && s.startsWith("Successfully")){
 			
 			log.info("Registered");
