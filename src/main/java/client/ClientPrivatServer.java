@@ -93,7 +93,7 @@ public class ClientPrivatServer implements Runnable{
 				
 			} catch (IOException e) {
 				
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			
 			log.info("new PrivateMsgHandler started");

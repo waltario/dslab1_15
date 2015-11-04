@@ -16,6 +16,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>build</name>
+			<type>2</type>
+			<location>D:/Eclipse_Dev/dslab15/build</location>
+		</link>
+		<link>
 			<name>java</name>
 			<type>2</type>
 			<location>D:/Eclipse_Dev/dslab15/src/main/java</location>

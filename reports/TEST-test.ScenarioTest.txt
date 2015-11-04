@@ -1,0 +1,146 @@
+Testsuite: test.ScenarioTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 49,061 sec
+------------- Standard Output ---------------
+00_login_test.txt
+03:50:55.170		alice.vienna.at> !login alice.vienna.at 12345
+03:50:55.558		alice.vienna.at: Successfully logged in.
+03:50:55.879		alice.vienna.at> !list
+03:50:55.952		alice.vienna.at:
+03:50:55.952		Online users:
+03:50:55.952		* alice.vienna.at
+03:50:56.356		chatserver> !users
+03:50:56.360		chatserver:
+03:50:56.360		alice.vienna.at online
+03:50:56.360		bill.de offline
+03:50:56.911		chatserver> !exit
+03:50:57.390		alice.vienna.at> !exit
+################################################################################
+01_login_test_with_2_clients.txt
+03:51:04.027		alice.vienna.at> !login alice.vienna.at 12345
+03:51:04.091		alice.vienna.at: Successfully logged in.
+03:51:04.634		bill.de> !login bill.de 23456
+03:51:04.980		bill.de: Successfully logged in.
+03:51:05.320		alice.vienna.at> !list
+03:51:05.415		alice.vienna.at:
+03:51:05.415		Online users:
+03:51:05.415		* alice.vienna.at
+03:51:05.415		* bill.de
+03:51:05.805		chatserver> !users
+03:51:05.814		chatserver:
+03:51:05.814		alice.vienna.at online
+03:51:05.814		bill.de online
+03:51:06.424		chatserver> !exit
+03:51:06.975		alice.vienna.at> !exit
+03:51:07.529		bill.de> !exit
+################################################################################
+03_exit_scenario1.txt
+03:51:14.117		alice.vienna.at> !login alice.vienna.at 12345
+03:51:14.176		alice.vienna.at: Successfully logged in.
+03:51:14.736		bill.de> !login bill.de 23456
+03:51:14.858		bill.de: Successfully logged in.
+03:51:15.329		alice.vienna.at> !list
+03:51:15.406		alice.vienna.at:
+03:51:15.406		Online users:
+03:51:15.406		* alice.vienna.at
+03:51:15.406		* bill.de
+03:51:15.933		chatserver> !users
+03:51:15.937		chatserver:
+03:51:15.937		alice.vienna.at online
+03:51:15.937		bill.de online
+03:51:16.900		bill.de> !exit
+03:51:17.290		chatserver> !exit
+03:51:17.879		alice.vienna.at> !exit
+################################################################################
+04_exit_scenario2.txt
+03:51:24.403		alice.vienna.at> !login alice.vienna.at 12345
+03:51:24.484		alice.vienna.at: Successfully logged in.
+03:51:24.975		bill.de> !login bill.de 23456
+03:51:25.033		bill.de: Successfully logged in.
+03:51:25.543		alice.vienna.at> !list
+03:51:25.650		alice.vienna.at:
+03:51:25.650		Online users:
+03:51:25.650		* alice.vienna.at
+03:51:25.650		* bill.de
+03:51:26.058		chatserver> !users
+03:51:26.059		chatserver:
+03:51:26.059		alice.vienna.at online
+03:51:26.059		bill.de online
+03:51:26.626		bill.de> !exit
+03:51:27.144		alice.vienna.at> !exit
+03:51:27.645		chatserver> !exit
+################################################################################
+04_log_off_scenario.txt
+03:51:34.227		alice.vienna.at> !login alice.vienna.at 12345
+03:51:34.260		alice.vienna.at: Successfully logged in.
+03:51:34.828		bill.de> !login bill.de 23456
+03:51:34.899		bill.de: Successfully logged in.
+03:51:35.537		alice.vienna.at> !list
+03:51:35.552		alice.vienna.at:
+03:51:35.552		Online users:
+03:51:35.552		* alice.vienna.at
+03:51:35.552		* bill.de
+03:51:36.103		chatserver> !users
+03:51:36.103		chatserver:
+03:51:36.103		alice.vienna.at online
+03:51:36.103		bill.de online
+03:51:36.762		alice.vienna.at> !logout
+03:51:36.828		alice.vienna.at: Successfully logged out.
+03:51:37.343		bill.de> !list
+03:51:37.492		bill.de:
+03:51:37.492		Online users:
+03:51:37.492		* bill.de
+03:51:37.925		chatserver> !users
+03:51:37.926		chatserver:
+03:51:37.926		alice.vienna.at offline
+03:51:37.926		bill.de online
+03:51:38.517		chatserver> !exit
+03:51:39.102		bill.de> !exit
+03:51:39.575		alice.vienna.at> !exit
+################################################################################
+------------- ---------------- ---------------
+------------- Standard Error -----------------
+Nov 04, 2015 3:50:51 AM chatserver.ChatServerListenerTCP run
+INFORMATION: ChatServerListenerTCP established tcp connection
+Nov 04, 2015 3:50:55 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:50:55 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:50:56 AM client.ClientResponseHandler run
+INFORMATION: null was received
+Nov 04, 2015 3:51:05 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:51:05 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:51:06 AM client.ClientResponseHandler run
+INFORMATION: null was received
+Nov 04, 2015 3:51:15 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:51:15 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:51:17 AM client.ClientResponseHandler run
+INFORMATION: null was received
+Nov 04, 2015 3:51:25 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:51:25 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:51:35 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:51:35 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:51:36 AM client.ClientResponseHandler run
+INFORMATION: message returned: Successfully logged out.
+Nov 04, 2015 3:51:36 AM client.ClientResponseHandler run
+INFORMATION: null was received
+Nov 04, 2015 3:51:37 AM chatserver.HandlerUDP run
+INFORMATION: new Sever UDP Handler running...
+Nov 04, 2015 3:51:37 AM chatserver.HandlerUDP run
+INFORMATION: UDP request String from Client: !list
+Nov 04, 2015 3:51:38 AM client.ClientResponseHandler run
+INFORMATION: null was received
+------------- ---------------- ---------------
+
+Testcase: 00_login_test took 6,855 sec
+Testcase: 01_login_test_with_2_clients took 10,139 sec
+Testcase: 03_exit_scenario1 took 10,32 sec
+Testcase: 04_exit_scenario2 took 9,797 sec
+Testcase: 04_log_off_scenario took 11,929 sec
