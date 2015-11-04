@@ -1,0 +1,106 @@
+Testsuite: test.ScenarioTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 49,903 sec
+------------- Standard Output ---------------
+00_login_test.txt
+20:43:07.977		alice.vienna.at> !login alice.vienna.at 12345
+20:43:08.404		alice.vienna.at: Successfully logged in.
+20:43:08.785		alice.vienna.at> !list
+20:43:08.863		alice.vienna.at:
+20:43:08.863		Online users:
+20:43:08.863		* alice.vienna.at
+20:43:09.221		chatserver> !users
+20:43:09.222		chatserver:
+20:43:09.222		alice.vienna.at online
+20:43:09.222		bill.de offline
+20:43:09.778		chatserver> !exit
+20:43:10.353		alice.vienna.at> !exit
+################################################################################
+01_login_test_with_2_clients.txt
+20:43:16.889		alice.vienna.at> !login alice.vienna.at 12345
+20:43:17.008		alice.vienna.at: Successfully logged in.
+20:43:17.557		bill.de> !login bill.de 23456
+20:43:17.589		bill.de: Successfully logged in.
+20:43:18.109		alice.vienna.at> !list
+20:43:18.110		alice.vienna.at:
+20:43:18.110		Online users:
+20:43:18.110		* alice.vienna.at
+20:43:18.110		* bill.de
+20:43:18.711		chatserver> !users
+20:43:18.719		chatserver:
+20:43:18.719		alice.vienna.at online
+20:43:18.719		bill.de online
+20:43:19.372		chatserver> !exit
+20:43:19.890		alice.vienna.at> !exit
+20:43:20.426		bill.de> !exit
+################################################################################
+03_exit_scenario1.txt
+20:43:27.103		alice.vienna.at> !login alice.vienna.at 12345
+20:43:27.224		alice.vienna.at: Successfully logged in.
+20:43:27.761		bill.de> !login bill.de 23456
+20:43:27.995		bill.de: Successfully logged in.
+20:43:28.463		alice.vienna.at> !list
+20:43:28.530		alice.vienna.at:
+20:43:28.530		Online users:
+20:43:28.530		* alice.vienna.at
+20:43:28.530		* bill.de
+20:43:29.116		chatserver> !users
+20:43:29.123		chatserver:
+20:43:29.123		alice.vienna.at online
+20:43:29.123		bill.de online
+20:43:29.948		bill.de> !exit
+20:43:30.501		chatserver> !exit
+20:43:31.099		alice.vienna.at> !exit
+################################################################################
+04_exit_scenario2.txt
+20:43:37.727		alice.vienna.at> !login alice.vienna.at 12345
+20:43:37.865		alice.vienna.at: Successfully logged in.
+20:43:38.336		bill.de> !login bill.de 23456
+20:43:38.460		bill.de: Successfully logged in.
+20:43:38.871		alice.vienna.at> !list
+20:43:39.000		alice.vienna.at:
+20:43:39.000		Online users:
+20:43:39.000		* alice.vienna.at
+20:43:39.000		* bill.de
+20:43:39.491		chatserver> !users
+20:43:39.491		chatserver:
+20:43:39.491		alice.vienna.at online
+20:43:39.491		bill.de online
+20:43:40.080		bill.de> !exit
+20:43:40.684		alice.vienna.at> !exit
+20:43:41.089		chatserver> !exit
+################################################################################
+04_log_off_scenario.txt
+20:43:47.803		alice.vienna.at> !login alice.vienna.at 12345
+20:43:47.938		alice.vienna.at: Successfully logged in.
+20:43:48.387		bill.de> !login bill.de 23456
+20:43:48.459		bill.de: Successfully logged in.
+20:43:49.030		alice.vienna.at> !list
+20:43:49.140		alice.vienna.at:
+20:43:49.140		Online users:
+20:43:49.140		* alice.vienna.at
+20:43:49.140		* bill.de
+20:43:49.610		chatserver> !users
+20:43:49.610		chatserver:
+20:43:49.610		alice.vienna.at online
+20:43:49.610		bill.de online
+20:43:50.122		alice.vienna.at> !logout
+20:43:50.267		alice.vienna.at: Successfully logged out.
+20:43:50.781		bill.de> !list
+20:43:51.013		bill.de:
+20:43:51.013		Online users:
+20:43:51.013		* bill.de
+20:43:51.375		chatserver> !users
+20:43:51.375		chatserver:
+20:43:51.375		alice.vienna.at offline
+20:43:51.375		bill.de online
+20:43:52.062		chatserver> !exit
+20:43:52.707		bill.de> !exit
+20:43:53.213		alice.vienna.at> !exit
+################################################################################
+------------- ---------------- ---------------
+
+Testcase: 00_login_test took 6,957 sec
+Testcase: 01_login_test_with_2_clients took 10,139 sec
+Testcase: 03_exit_scenario1 took 10,673 sec
+Testcase: 04_exit_scenario2 took 9,99 sec
+Testcase: 04_log_off_scenario took 12,124 sec

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import client.ClientHandlerUDP;
@@ -20,6 +21,7 @@ public class HandlerUDP implements Runnable{
 	 * @param packet received from a client, new thread was started to examine
 	 */
 	public HandlerUDP(DatagramPacket packet) {
+		log.setLevel(Level.OFF);
 		this.packet = packet;
 		this.datagramSocket = null;
 		this.chatServerData = ChatServerData.getChatSeverDataSingleton();

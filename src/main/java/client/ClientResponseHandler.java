@@ -2,6 +2,7 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -18,6 +19,7 @@ public class ClientResponseHandler implements Runnable {
 	private String lastPublicMessage;
 	
 	public ClientResponseHandler(BufferedReader reader) {
+		log.setLevel(Level.OFF);
 		
 		this.lastPublicMessage = null;
 		this.reader = reader;

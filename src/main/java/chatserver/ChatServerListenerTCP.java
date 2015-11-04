@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -23,6 +24,7 @@ public class ChatServerListenerTCP implements Runnable{
 	private boolean isClosed;
 	
 	public ChatServerListenerTCP(int tcpPort) {
+		log.setLevel(Level.OFF);
 		this.tcpPort = tcpPort;
 		this.serverSocket = null;
 		this.isClosed = false;

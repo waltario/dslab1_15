@@ -24,6 +24,7 @@ public class ChatServerData {
 	
 	private ChatServerData() {
 		log.setLevel(Level.OFF);
+		
 		this.passwordMap = new ConcurrentHashMap<String,String>();
 		//this.usersMap = new ConcurrentHashMap <String,String>();	
 		this.usersMap = new ConcurrentSkipListMap <String,String>(); 

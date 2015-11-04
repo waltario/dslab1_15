@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientPrivatServer implements Runnable{
@@ -20,6 +21,8 @@ public class ClientPrivatServer implements Runnable{
 	private String ip;
 	
 	public ClientPrivatServer(String privateIPAdress) {
+		log.setLevel(Level.OFF);
+		
 		this.isClosed = false;
 		this.serverPrivateSocket = null;
 		

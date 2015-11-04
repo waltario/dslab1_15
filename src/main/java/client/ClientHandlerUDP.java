@@ -27,7 +27,7 @@ public class ClientHandlerUDP implements Runnable{
 	}
 	
 	public ClientHandlerUDP(int udpPort,String ia) {
-	
+		log.setLevel(Level.OFF);
 		this.udpPort = udpPort;
 		this.datagramSocket = null;
 		this.packet = null;
