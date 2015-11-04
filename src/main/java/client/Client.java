@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import cli.Command;
 import cli.Shell;
@@ -56,10 +57,13 @@ public class Client implements IClientCli, Runnable {
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
 		
+		log.setLevel(Level.OFF);
+		
 		this.clientSocket = null;		
 		this.t_clientSocket = null;		
 		this.handlerTCP = null;
-		this.lastMessage = null;		
+		this.lastMessage = null;
+		this.clientHandlerUDP = null;
 		
 		//register shell
 		this.shell = new Shell(componentName, userRequestStream, userResponseStream);
@@ -108,25 +112,27 @@ public class Client implements IClientCli, Runnable {
 				try {
 					this.clientSocket = new Socket(chatserver_name, chatserver_tcp_port);
 				} catch (UnknownHostException e) {
-					e.printStackTrace();
+					return "### ERROR Chat-Sever offline ";
 				} catch (IOException e) {
-					e.printStackTrace();
+					return "### ERROR - Chat-Sever offline ";
 				}
 				this.handlerTCP = new HandlerTCP(this.clientSocket);
 				this.t_clientSocket = new Thread(this.handlerTCP);
 				this.t_clientSocket.start();
 		
 		String serverMessage = handlerTCP.login(username, password);
-		
-		if(serverMessage.startsWith("Successfully"))	
+		log.info("return value : servermessage : " +serverMessage);
+		if(serverMessage.startsWith("Successfully")){	
 			this.isLoggedIn = true;				//set client as logged in to be able to send all commands
+			return serverMessage;
+		}
 		else{
 		    log.info("login not successfull");	//login was not successful -> close TCP Conenction
 			this.handlerTCP.close();
-		
+			return serverMessage;
 		}
 			
-		return serverMessage;
+		
 		
 	}
 
@@ -137,6 +143,7 @@ public class Client implements IClientCli, Runnable {
 		if(!this.checkLogStatus())
 			return "User is already logged out.";
 				
+		log.info("before sending logout");
 		String s = handlerTCP.logout();				//send logout request to sever
 		this.isLoggedIn = false;					//set client as logged out
 		handlerTCP.close();							//close tcp c
@@ -210,9 +217,10 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String exit() throws IOException {
 	
-		
-		this.handlerTCP.close();
-		this.clientHandlerUDP.close();
+		if(this.handlerTCP != null)
+			this.handlerTCP.close();
+		if(this.clientHandlerUDP != null)
+			this.clientHandlerUDP.close();
 		shell.close();		
 		return null;
 	}

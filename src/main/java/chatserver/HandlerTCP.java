@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HandlerTCP implements Runnable{
 
 	private static final Logger log = Logger.getLogger(ChatServerListenerTCP.class.getName());
+	
 	
 	private String name;					//save user name after login
 	private Socket tcpSocket;
@@ -22,6 +24,9 @@ public class HandlerTCP implements Runnable{
 	
 	
 	public HandlerTCP(Socket tcpSocket) {
+	
+		log.setLevel(Level.OFF);
+		
 		this.tcpSocket = tcpSocket;
 		this.writer = null;
 		this.reader = null;
@@ -46,6 +51,7 @@ public class HandlerTCP implements Runnable{
 	public void shutdown(){
 		
 		this.isClosed= true;	
+		log.info("name = "+ this.name);
 		if(this.name != null){
 			//logout set user offline and deletes TCPHandler from list and clis
 			log.info("try to logout via shutdown");
@@ -83,9 +89,11 @@ public class HandlerTCP implements Runnable{
 			
 		String message =null;
 		
-		while(!isClosed){
+		
 						
 				try {
+					
+					while(!isClosed){
 					
 					log.info("HandlerTCP - Server Wait for incoming command");
 					//while( (message = reader.readLine()) != null){
@@ -106,14 +114,18 @@ public class HandlerTCP implements Runnable{
 						if(this.isLoggedOut)									//shutdown TCP Connection
 							this.shutdown();
 						
+					}
+						
 				} catch (IOException e) {
-					this.shutdown();
+				
 					//this.chatServerData.setUserOffline(this.name);
 					//this.isClosed = true;	//if exeception occurs -> kill while(true) -> 
 				}	finally {
+					this.shutdown();
+					log.info("tcp handler closed");
 					
 				}
-		}
+		
 	}
 	
 	public String checkCommand(String command){
@@ -132,8 +144,9 @@ public class HandlerTCP implements Runnable{
 			for(HandlerTCP item : this.chatServerData.getAllOnlineTCPHandler(this.name)){
 				
 				//TODO return to all clients, except sender, the public message -> already done
-				log.info("send to client" + item.getName());
-				if(this.name.matches(item.getName())){
+				log.info("send to client " + item.getName());
+				if(!this.name.equals(item.getName())){
+					log.info("try to send: " + item.getName() +" message: " +   user_message);
 					item.writeToClient(user_message);
 				}
 				
@@ -194,6 +207,15 @@ public class HandlerTCP implements Runnable{
 					
 					log.info("!register command: " + splittedStirings[0] + " " + splittedStirings[1]);
 					
+					if(splittedStirings[1].matches("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})")){
+						this.chatServerData.register(splittedStirings[1], this.name);
+						retMessage = "Successfully registered adress for "+ this.name + ".";
+					}
+					else
+						retMessage = "### Error IP not in a valid form e.g. 192.168.0.10:10982";
+						
+					
+					/*
 					if(this.chatServerData.register(splittedStirings[1], this.name)){
 						
 						log.info("### ALL REG USERS ### "+this.chatServerData.getAllRegUsers());
@@ -201,6 +223,7 @@ public class HandlerTCP implements Runnable{
 					}
 					else
 						retMessage = "User with name already registered";
+					*/
 					break;
 					
 				case "!lookup":

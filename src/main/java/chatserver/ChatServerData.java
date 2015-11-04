@@ -5,7 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ChatServerData {
@@ -20,9 +23,10 @@ public class ChatServerData {
 	private Map<String,String> registeredUsers;		//save users which have registerd
 	
 	private ChatServerData() {
-		
+		log.setLevel(Level.OFF);
 		this.passwordMap = new ConcurrentHashMap<String,String>();
-		this.usersMap = new ConcurrentHashMap<String,String>();	
+		//this.usersMap = new ConcurrentHashMap <String,String>();	
+		this.usersMap = new ConcurrentSkipListMap <String,String>(); 
 		this.clientList = Collections.synchronizedList(new ArrayList<HandlerTCP>());	
 		this.registeredUsers = new ConcurrentHashMap<String,String>();
 	}
@@ -48,7 +52,7 @@ public class ChatServerData {
 		if(this.passwordMap.containsKey(username)){
 			userPassword  = this.passwordMap.get(username);
 			
-			if (password.matches(userPassword)){
+			if (password.equals(userPassword)){
 				this.setUserOnline(username);
 				return true;
 			}
@@ -63,25 +67,7 @@ public class ChatServerData {
 		
 		usersMap.put(username, "offline");
 		return true;
-		//get saved tcpHandler connection for user and remove from list and shut down
-		//HandlerTCP Connection Name has to be unique
-		/*int positionTCPHandler = -1;
-		for(HandlerTCP hTCP : this.clientList){
-			if(hTCP.getName().matches(username)){
-				positionTCPHandler = this.clientList.indexOf(hTCP);
-				log.info("Postion TCPHandler logout: " + positionTCPHandler);
-			}
-		}
-		//remove index element from list if found
-		if(positionTCPHandler != -1){
-			HandlerTCP hTCPRemoved = this.clientList.remove(positionTCPHandler);
-			//hTCPRemoved.shutdown();		//close TCP Connection
-			//log.info("successfully removed tcp connection and close it");
-			return true;
-		}
-		else 
-			return false;
-		*/
+		
 	}
 	
 	public boolean removeTCPHandler(String name){
@@ -133,14 +119,18 @@ public class ChatServerData {
 		
 	}
 	
-	public boolean register(String ip,String username){
+	public void register(String ip,String username){
 		
+		//if username already exists -> override ip 
+		this.registeredUsers.put(username, ip);
+		
+		/*
 		if(this.registeredUsers.containsKey(username))
 			return false; 
 		else{
 			this.registeredUsers.put(username, ip);
 			return true;
-		}
+		}*/
 	}
 	
 	
@@ -160,8 +150,7 @@ public class ChatServerData {
 		this.passwordMap.put(username, password);	//save username and password
 	}
 	
-
-	
+	/*
 	public String getAllUsers(){
 	
 		String allUserListStatus = "";
@@ -213,14 +202,76 @@ public class ChatServerData {
 		}
 		log.info(" " + handler.size() + " online HandlerTCP at the moment");
 		return handler;
+	}	
+	*/
+	
+	
+	
+	public String getOnlineUsers(){
+	
+		String allUserListStatus = "Online users:\n";
+		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
+			if(entry.getValue().equals("online")){
+				allUserListStatus = allUserListStatus + "* " + entry.getKey() + "\n";
+			}
+		}
+		
+		return allUserListStatus;
+	}
+	
+	public String getAllUsers(){
+		
+		String allUserListStatus = "";
+		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
+			allUserListStatus += entry.getKey();
+			allUserListStatus += " ";
+			allUserListStatus += entry.getValue();
+			allUserListStatus += "\n";
+		}
+		
+		return allUserListStatus;
+	}
+	
+	public String getAllRegUsers(){
+		
+		String allUserListStatus = "";
+		for(Map.Entry<String, String> entry : this.registeredUsers.entrySet()){
+			allUserListStatus += entry.getKey();
+			allUserListStatus += " ";
+			allUserListStatus += entry.getValue();
+			allUserListStatus += "\n";
+		}
+		
+		return allUserListStatus;
 	}
 	
 	
-	public Map<String,String> sortUsers(){
-		//TODO return a string that is sorted in alphabetic order for username
-		return null;
+	public List<String> getAllOnlineUsers(){
+		
+		List onlineUsers = new ArrayList<String>();
+		for(Map.Entry<String, String> entry : this.usersMap.entrySet()){
+			if(entry.getValue().equals("online"))
+				onlineUsers.add(entry.getKey());
+		}
+		
+		return onlineUsers;
 	}
-
+	
+	public List<HandlerTCP> getAllOnlineTCPHandler(String sender){
+		
+		List<HandlerTCP> handler = new ArrayList<HandlerTCP>();
+		for(HandlerTCP item : this.getHandlerTCPList()){
+			for(String htcp : this.getAllOnlineUsers()){
+			
+					if(item.getName().equals(htcp) && !item.getName().equals(sender)){
+						handler.add(item);
+						log.info("added receiver: " + item.getName());
+					}
+			}
+		}
+		log.info(" " + handler.size() + " online HandlerTCP at the moment");
+		return handler;
+	}
 	
 	
 	/**

@@ -27,7 +27,7 @@ public class PrivateMsgHandler implements Runnable {
 			this.writer = new PrintWriter(socket.getOutputStream(),true);
 			this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 	}
@@ -42,13 +42,30 @@ public class PrivateMsgHandler implements Runnable {
 		String request = null;
 		try {
 			request = reader.readLine();
+			log.info("request received" + request);
+			writer.println("!ack");
+			
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			
+		}finally {
+			if(writer != null)
+				writer.close();
+			if(reader != null)
+				try {
+					reader.close();
+				} catch (IOException e1) {
+				
+				}
+			try {
+				if(this.socket != null && !socket.isClosed())
+					this.socket.close();
+				
+			} catch (IOException e) {
+				
+			}
 		}
-		log.info("request received" + request);
-		writer.println("!ack");
-		
+
 		
 	}
 

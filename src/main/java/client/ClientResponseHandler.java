@@ -11,7 +11,6 @@ public class ClientResponseHandler implements Runnable {
 	
 	//private Queue queue;
 	private boolean isClosed;
-	private int count;
 	private String message;
 	private String retMessage;
 	private boolean isMessage;
@@ -22,7 +21,6 @@ public class ClientResponseHandler implements Runnable {
 		this.reader = reader;
 		//this.queue = new LinkedList<String>();
 		this.isClosed = false;
-		count=0;
 		this.isMessage = false;
 	}
 	
@@ -39,22 +37,23 @@ public class ClientResponseHandler implements Runnable {
 	public void run() {
 		
 		
-		//if not shutted down
-		while(!this.isClosed){
-			
-			
 			try {
+				//if not shutted down
+				while(!this.isClosed){
 				
 				this.message = this.reader.readLine();
-				if(this.message == null)
+				if(this.message == null){
+					
+					log.info("null was received");
 					break;
-				
+				}
 				log.info("message returned: " + this.message);
 				
-				boolean test1 = message.substring(0,3).matches("\\d+");
-				boolean test2 = this.message.startsWith("Successfully");
-				boolean test3 = this.message.startsWith("Wrong");
-				boolean test4 = this.message.startsWith("###");
+				boolean test1 = message.substring(0,3).matches("\\d+");		//ip adress response 192.xxx
+				boolean test2 = this.message.startsWith("Successfully");	//success message response
+				boolean test3 = this.message.startsWith("Wrong");			//wrong username 
+				boolean test4 = this.message.startsWith("###");				//### error response
+				//boolean test5 = this.message.startsWith("User");			//register response
 				//TODO Add more response strings
 				
 				if( test1 || test2 || test3 || test4){
@@ -66,17 +65,18 @@ public class ClientResponseHandler implements Runnable {
 					System.out.println(this.message);
 				}
 					
+				}
 			} catch (IOException e) {
 				
-				
+				this.close();
 				//log.info("Exception: User was logged out -> closing thread for incoming responses");
 				//e.printStackTrace();
 			} finally {
-				this.close();
+				
 			}
 			
 			
-		}
+	
 		
 		
 	

@@ -65,7 +65,9 @@ public class HandlerUDP implements Runnable{
 			String retMessage = "";
 			
 			if(message.startsWith("!list") && message.length() == 5){
-				retMessage = chatServerData.getAllUsers();
+				retMessage = chatServerData.getOnlineUsers();
+				//retMessage = chatServerData.getAllUsers();
+				
 				//TODO change to allOnlineUsers
 			}
 			else{

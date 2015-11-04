@@ -17,18 +17,22 @@ public class ClientPrivatServer implements Runnable{
 	private ServerSocket serverPrivateSocket;
 	private ExecutorService executor;
 	private int tcp_port;
+	private String ip;
 	
-	public ClientPrivatServer(int tcp_port) {
+	public ClientPrivatServer(String privateIPAdress) {
 		this.isClosed = false;
 		this.serverPrivateSocket = null;
-		this.tcp_port = tcp_port;	
+		
+		this.ip = privateIPAdress.substring(0,privateIPAdress.length()-6);
+		this.tcp_port = Integer.valueOf(privateIPAdress.substring(privateIPAdress.length()-5));;
+		
 	}
 	
 	public void init(){
 		
 		try {
 			this.executor = Executors.newFixedThreadPool(20); 
-			this.serverPrivateSocket = new ServerSocket(tcp_port, 50, InetAddress.getByName("192.168.0.10"));
+			this.serverPrivateSocket = new ServerSocket(tcp_port, 50, InetAddress.getByName(ip));
 			//this.serverPrivateSocket = new ServerSocket(InetAddress.getByName("192.168.0.40"),50,this.tcp_port);
 			
 		} catch (IOException e) {
@@ -44,12 +48,13 @@ public class ClientPrivatServer implements Runnable{
 		
 		try {
 		
-			this.serverPrivateSocket.close();
+			if(this.serverPrivateSocket != null)
+				this.serverPrivateSocket.close();
 			
 		
 		} catch (IOException e) {
 			
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 		try {
@@ -83,13 +88,14 @@ public class ClientPrivatServer implements Runnable{
 			try {
 				log.info("waiting for incoming privateTCP Request");
 				clientSocket = this.serverPrivateSocket.accept();
+				PrivateMsgHandler msgHandler = new PrivateMsgHandler(clientSocket);
+				executor.execute(msgHandler);
 				
 			} catch (IOException e) {
 				
 				e.printStackTrace();
 			}
-			PrivateMsgHandler msgHandler = new PrivateMsgHandler(clientSocket);
-			executor.execute(msgHandler);
+			
 			log.info("new PrivateMsgHandler started");
 		
 		}

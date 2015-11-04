@@ -5,7 +5,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientHandlerUDP implements Runnable{
@@ -21,6 +23,7 @@ public class ClientHandlerUDP implements Runnable{
 	
 	
 	public ClientHandlerUDP(){
+		log.setLevel(Level.OFF);
 	}
 	
 	public ClientHandlerUDP(int udpPort,String ia) {
@@ -41,20 +44,26 @@ public class ClientHandlerUDP implements Runnable{
 
 	//### commmands ###
 	
-	public String list() throws IOException{
+	public String list(){
 		
 		//send udp paket to server
 		String sendToServer = "!list";
 		data = sendToServer.getBytes();
 		packet = new DatagramPacket(data, data.length, this.ia, this.udpPort);
+		try{
 		datagramSocket = new DatagramSocket();
 		datagramSocket.send(packet);
+		 
+		datagramSocket.setSoTimeout(2000);   	//if datagarmsocket.receive is 2s inactive -> Exception -> if sever is not online anymore
 		
 		//wait for server response
 		data = new byte[ 1024 ];
 		DatagramPacket packet = new DatagramPacket(data,data.length);
-		this.datagramSocket.receive( packet );
 		
+			this.datagramSocket.receive( packet );
+	    } catch (IOException e) {
+	    	return "### ERROR - Timeout UDP Sending, Server might be offline";
+	    }
 		//create string from udp data
 		String ret = new String (packet.getData(),0, packet.getLength());
 		

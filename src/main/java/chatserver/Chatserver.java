@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cli.Command;
@@ -58,6 +59,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.config = config;
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
+		
+		log.setLevel(Level.OFF);
 		
 		//register shell
 		shell = new Shell(componentName, userRequestStream, userResponseStream);

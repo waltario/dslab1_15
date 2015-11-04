@@ -29,14 +29,30 @@ public class HandlerPrivateTCP implements Runnable{
 			this.reader = new BufferedReader(new InputStreamReader(this.privateSocket.getInputStream()));
 		} catch (IOException e) {
 			
-			e.printStackTrace();
 		}
 		
 	}
 	
 	public void close(){
 		this.isClosed = true;
+		
+		if(this.writer != null)
+			this.writer.close();
+		if(this.reader != null)
+			try {
+				this.reader.close();
+			} catch (IOException e) {
+				
+			}
+		
+		if(this.privateSocket != null && !this.privateSocket.isClosed()){
+				try {
+					this.privateSocket.close();
+				} catch (IOException e1) {	
+				}
+		}
 	}
+		
 	
 	public boolean msg(String message){
 	
@@ -68,7 +84,6 @@ public class HandlerPrivateTCP implements Runnable{
 	public void run() {
 		
 		log.info("HandlerPrivatetTCP running...");
-		//init();
 		
 		while(!this.isClosed){	
 		}	
